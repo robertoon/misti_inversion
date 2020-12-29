@@ -92,19 +92,19 @@ def setup_pulu():
     # start by fixing all the parameters in the control file
     par.loc[:, "partrans"] = "fixed"
 
-    par.loc["total_erupted_mass", "parlbnd"] = 1e10
-    par.loc["total_erupted_mass", "parubnd"] = 1e12
-    par.loc["total_erupted_mass", "parval1"] = 1e11
+    par.loc["total_erupted_mass", "parlbnd"] = 1e9
+    par.loc["total_erupted_mass", "parubnd"] = 1e11
+    par.loc["total_erupted_mass", "parval1"] = 1e10
     par.loc["total_erupted_mass", "partrans"] = "log"
 
-    par.loc["column_height", "parlbnd"] = 8000
-    par.loc["column_height", "parubnd"] = 20000
-    par.loc["column_height", "parval1"] = 15000
+    par.loc["column_height", "parlbnd"] = 15000
+    par.loc["column_height", "parubnd"] = 25000
+    par.loc["column_height", "parval1"] = 21000
     par.loc["column_height", "partrans"] = "log"
 
     par.loc["diffusion_coef", "parlbnd"] = 1000
     par.loc["diffusion_coef", "parubnd"] = 10000
-    par.loc["diffusion_coef", "parval1"] = 3000
+    par.loc["diffusion_coef", "parval1"] = 5000
     par.loc["diffusion_coef", "partrans"] = "log"
 
     # it looks like mean grainsize is already in log space?
@@ -114,14 +114,14 @@ def setup_pulu():
     par.loc["tgsd_mean", "partrans"] = "none"
     par.loc["tgsd_mean", "parchglim"] = "relative"
 
-    par.loc["ellipse_major_axis", "parlbnd"] = 3000 
-    par.loc["ellipse_major_axis", "parubnd"] = 12000
-    par.loc["ellipse_major_axis", "parval1"] = 7000
+    par.loc["ellipse_major_axis", "parlbnd"] = 6000 
+    par.loc["ellipse_major_axis", "parubnd"] = 15000
+    par.loc["ellipse_major_axis", "parval1"] = 11500
     par.loc["ellipse_major_axis", "partrans"] = "log"
 
-    par.loc["ellipse_minor_axis", "parlbnd"] = 1000
-    par.loc["ellipse_minor_axis", "parubnd"] = 7000
-    par.loc["ellipse_minor_axis", "parval1"] = 3000
+    par.loc["ellipse_minor_axis", "parlbnd"] = 6000
+    par.loc["ellipse_minor_axis", "parubnd"] = 15000
+    par.loc["ellipse_minor_axis", "parval1"] = 11500
     par.loc["ellipse_minor_axis", "partrans"] = "log"
 
 
@@ -136,14 +136,14 @@ def setup_pulu():
     # #par.loc["ellipse_minor_axis", "partrans"] = "tied"
     # par.loc["ellipse_minor_axis", "partied"] = "ellipse_major_axis"
   
-    par.loc["wind_speed", "parlbnd"] = 0.1
-    par.loc["wind_speed", "parubnd"] = 5
-    par.loc["wind_speed", "parval1"] = 1
+    par.loc["wind_speed", "parlbnd"] = 1
+    par.loc["wind_speed", "parubnd"] = 8
+    par.loc["wind_speed", "parval1"] = 5
     par.loc["wind_speed", "partrans"] = "log"
 
-    par.loc["wind_direction", "parlbnd"] = 195
+    par.loc["wind_direction", "parlbnd"] = 205
     par.loc["wind_direction", "parubnd"] = 225
-    par.loc["wind_direction", "parval1"] = 210
+    par.loc["wind_direction", "parval1"] = 217
     par.loc["wind_direction", "partrans"] = "log"
 
     # set the observed thickness values
@@ -198,7 +198,7 @@ def pulu_run_glm():
     """run pestpp-glm in parallel locally"""
     pst = pyemu.Pst(os.path.join("pulu", "pulu.pst"))
     pst.control_data.noptmax = 5
-    pst.pestpp_options["glm_num_reals"] = 100
+    pst.pestpp_options["glm_num_reals"] = 200
 
     pst.write(os.path.join("pulu", "pulu_run.pst"))
     # pyemu.os_utils.run("pestpp-ies pulu_run.pst")
@@ -220,13 +220,13 @@ def pulu_plot_ies_results():
     pr_pe = pr_pe.loc[:, pst.adj_par_names]
     pt_pe = pt_pe.loc[:, pst.adj_par_names]
 
-    pyemu.plot_utils.ensemble_helper({"0.5": pr_pe, "b": pt_pe}, bins=20,
+    pyemu.plot_utils.ensemble_helper({"0.5": pr_pe, "b": pt_pe}, bins=40,
                                      filename=os.path.join(m_d, "pulu_ies_par_summary.pdf"))
     # plt.show()
     obs = pst.observation_data
     pyemu.plot_utils.ensemble_helper({"0.5": pr_oe, "b": pt_oe},
                                      deter_vals=obs.obsval.to_dict(),
-                                     bins=20,
+                                     bins=40,
                                      filename=os.path.join(m_d, "pulu_ies_obs_summary.pdf"))
     pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"0.5": pr_oe, "b": pt_oe},
                                        filename=os.path.join(m_d, "pulu_ies_obs_vs_sim.pdf"))

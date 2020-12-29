@@ -1,0 +1,576 @@
+------------------------------------------------------------------------------
+OPTIMISATION ITERATION NO.        : 1
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.00000
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.100000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.00254
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.100000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.00254
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1.00000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.02542
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1.00000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.02542
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 10.0000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.25418
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 10.0000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.25418
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 100.000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        3.54180
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 100.000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        3.54180
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1000.00 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        26.4180
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1000.00 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        26.4180
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+------------------------------------------------------------------------------
+OPTIMISATION ITERATION NO.        : 2
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.00000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.00000
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.100000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.100000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1.00000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1.00000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 10.0000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 10.0000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 100.000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 100.000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1000.00 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1000.00 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+------------------------------------------------------------------------------
+OPTIMISATION ITERATION NO.        : 3
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.00000 --------->
+
+FROZEN PARAMETERS-
+
+
+SINGULAR VALUES IN SOLUTION:-
+        1.00000
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+        0.00000        0.00000        0.00000        0.00000        1.00000        0.00000        0.00000
+        0.00000
+
+
+Number of singular values used in solution = 1
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.100000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 0.100000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1.00000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1.00000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 10.0000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 10.0000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 100.000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 100.000 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1000.00 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+
+CURRENT VALUE OF MARQUARDT LAMBDA = 1000.00 --------->
+
+FROZEN PARAMETERS-
+TOTAL_ERUPTED_MASS = 1.00000e+11
+
+
+SINGULAR VALUES IN SOLUTION:-
+TRUNCATED SINGULAR VALUES:-
+        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000
+
+
+MATRIX OF EIGENVECTORS IN SOLUTION:-
+
+Number of singular values used in solution = 0
+
+

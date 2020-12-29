@@ -1,0 +1,348 @@
+             pestpp-ies.exe - a GLM iterative Ensemble Smoother
+for PEST(++) datasets 
+
+                 by the PEST++ developement team
+
+
+
+
+
+version: 5.0.7
+binary compiled on Nov 11 2020 at 17:07:37
+
+using control file: "pulu_run.pst"
+in directory: "/Users/robertconstantinescu/Documents/Coduri Python/misti_inversion/pulu_prior_mc_master"
+on host: "Roberts-iMac.local"
+
+Note: 3 unused lines in pest control file:
+  -->  line number 6: '2.000000E+01  -3.000000E+00   3.000000E-01   1.000000E-02        -7       999          lamforgive        noderforgive' 
+  -->  line number 10: '0         0         0         0             jcosave          verboserec          jcosaveitn          reisaveitn          parsaveitn        noparsaverun' 
+  -->  line number 12: '1' 
+
+    This software has been approved for release by the
+    U.S.Geological Survey(USGS).Although the software has 
+    been subjected to rigorous review, the USGS reserves the
+    right to update the software as needed pursuant to further
+    analysisand review.No warranty, expressed or implied, is 
+    made by the USGS or the U.S.Government as to the
+    functionality of the softwareand related material nor shall
+    the fact of release constitute any such warranty.
+    Furthermore, the software is released on condition that
+    neither the USGS nor the U.S.Government shall be held
+    liable for any damages resulting from its authorized 
+    or unauthorized use.
+
+
+Case dimensions:- 
+    Number of parameters = 9
+    Number of adjustable parameters = 8
+    Number of observations = 24
+    Number of prior estimates = 0
+
+PEST Control Information
+    relparmax = 10
+    facparmax = 10
+    facorig = 0.001
+    phiredswh = 0.1
+    noptmax = -1
+    phiredstp = 0.01
+    nphistp = 3
+    nphinored = 3
+    relparstp = 0.01
+    nrelpar = 3
+
+
+    PEST++ OPTIONS: 
+
+...general options (used in multiple tools): 
+svd_pack: redsvd
+lambda_scale_fac: 0.75,1,1.1,
+forgive_unknown_args: 0
+max_run_fail: 3
+yamr_poll_interval: 1
+parameter_covariance: 
+observation_covariance: 
+hotstart_resfile: 
+overdue_resched_fac: 1.15
+overdue_giveup_fac: 100
+overdue_giveup_minutes: 1e+30
+condor_submit_file: 
+tie_by_group: 0
+par_sigma_range: 4
+enforce_tied_bounds: 0
+debug_parse_only: 0
+check_tplins: 1
+fill_tpl_zeros: 0
+additional_ins_delimiters: 
+random_seed: 358183147
+num_tpl_ins_threads: 1
+panther_agent_restart_on_error: 0
+panther_agent_no_ping_timeout_secs: -1
+panther_debug_loop: 0
+panther_echo: 1
+
+
+...pestpp-glm specific options:
+max_n_super: 1000000
+super_eigthresh: 1e-06
+n_iter_base: 1000000
+n_iter_super: 0
+super_relparmax: 0.1
+max_super_frz_iter: 20
+max_reg_iter: 20
+lambdas: 0.1,1,10,100,1000,
+iteration_summary: 0
+der_forgive: 1
+uncertainty: 1
+forecasts: 
+base_jacobian: 
+glm_num_reals: 0
+jac_scale: 1
+glm_normal_form: DIAG
+glm_debug_der_fail: 0
+glm_debug_lamb_fail: 0
+glm_debug_real_fail: 0
+glm_accept_mc_phi: 0
+glm_rebase_super: 0glm_iter_mc: 0
+...pestpp-swp options:
+sweep_parameter_csv_file: 
+sweep_output_csv_file: sweep_out.csv
+sweep_chunk: 500
+sweep_forgive: 0
+sweep_base_run: 0
+
+...pestpp-opt options:
+opt_objective_function: 
+opt_coin_log: 1
+opt_skip_final: 0
+opt_std_weights: 0
+opt_stack_size: 0
+opt_par_stack: 
+opt_obs_stack: 
+opt_decision_variable_groups: 
+opt_external_variable_groups: 
+opt_constraint_groups: 
+opt_risk: 0.5
+opt_iter_derinc_fac: 1
+opt_direction: 1
+opt_iter_tol: 0.001
+opt_recalc_fosm_every: 1
+opt_include_bnd_pi: 1
+
+...pestpp-ies options:
+ies_parameter_ensemble: 
+ies_observation_ensemble: 
+ies_restart_parameter_ensemble: 
+ies_restart_observation_ensemble: 
+ies_use_approximate_solution: 1
+ies_lambda_mults: 0.1,1,10,
+ies_initial_lambda: -999
+ies_use_approx: 1
+ies_subset_size: 4
+ies_reg_factor: 0
+ies_verbose_level: 0
+ies_use_prior_scaling: 0
+ies_num_reals: 1000
+ies_bad_phi: 1e+300
+ies_bad_phi_sigma: 1e+300
+ies_include_base: 1
+ies_use_empirical_prior: 0
+ies_group_draws: 1
+ies_enforce_bounds: 1
+ies_save_binary: 0
+ies_localizer: 
+ies_accept_phi_fac: 1.05
+ies_lambda_inc_fac: 10
+ies_lambda_dec_fac: 0.75
+ies_save_lambda_ensembles: 0
+ies_subset_how: RANDOM
+ies_localize_how: PARAMETERS
+ies_num_threads: -1
+ies_debug_fail_subset: 0
+ies_debug_fail_remainder: 0
+ies_debug_bad_phi: 0
+ies_debug_upgrade_only: 0
+ies_debug_high_subset_phi: 0
+ies_debug_high_upgrade_phi: 0
+ies_csv_by_reals: 1
+ies_autoadaloc: 0
+ies_autoadaloc_sigma_dist: 1
+ies_enforce_chglim: 0
+ies_center_on: 
+ies_no_noise: 0
+ies_drop_conflicts: 0
+ies_save_rescov:0
+ies_pdc_sigma_distance: -1
+
+pestpp-sen options: 
+gsa_method: MORRIS
+gsa_morris_pooled_obs: 0
+gsa_morris_obs_sen: 1
+gsa_morris_p: 4
+gsa_morris_r: 4
+gsa_morris_delta: 0.6666
+gsa_sobol_samples: 4
+gsa_sobol_par_dist: norm
+panther_agent_freeze_on_fail: 0
+
+
+
+Model command line(s):- 
+    python main.py
+
+Model interface files:-
+    template files:
+      ./config_pulu.py.tpl
+    model input files:
+      ./config_pulu.py
+
+    instruction files:
+      ./pulu_sim.dat.ins
+    model output files:
+      ./pulu_sim.dat
+
+
+Parameter group information
+NAME            INCREMENT TYPE     DERIVATIVE INCREMENT    INCREMENT LOWER BOUND  FORCE CENTRAL     INCREMENT MULTIPLIER
+pargp                 RELATIVE                     0.01                        0         SWITCH                        2
+
+
+
+Parameter information
+NAME               TRANSFORMATION        CHANGE LIMIT  INITIAL VALUE    LOWER BOUND    UPPER BOUND          GROUP          SCALE         OFFSET  DERIVATIVE COMMAND
+column_height      log                     FACTOR          21000          15000          25000          pargp              1              0                   1
+diffusion_coef     log                     FACTOR           5000           1000          10000          pargp              1              0                   1
+ellipse_major_axis log                     FACTOR          11500           6000          15000          pargp              1              0                   1
+ellipse_minor_axis log                     FACTOR          11500           6000          15000          pargp              1              0                   1
+tgsd_mean          none                  RELATIVE          -1.99             -5              5          pargp              1              0                   1
+tgsd_sigma         fixed                   FACTOR              1        1.1e-10        1.1e+10          pargp              1              0                   1
+total_erupted_mass log                     FACTOR          1e+10          1e+09          1e+11          pargp              1              0                   1
+wind_direction     log                     FACTOR            217            205            225          pargp              1              0                   1
+wind_speed         log                     FACTOR              5              1              8          pargp              1              0                   1
+
+
+
+Observation information
+NAME                                                      VALUE               GROUP              WEIGHT
+obs_e:228433.0_n:8192778.0_x:14153_y:4197                     7              obgnme                   1
+obs_e:229788.0_n:8193427.0_x:12798_y:3548                     5              obgnme                   1
+obs_e:231595.0_n:8198480.0_x:10991_y:-1505                    4              obgnme                   1
+obs_e:231694.0_n:8197619.0_x:10892_y:-644                     4              obgnme                   1
+obs_e:233194.0_n:8190440.0_x:9392_y:6535                     10              obgnme                   1
+obs_e:233908.0_n:8189011.0_x:8678_y:7964                     16              obgnme                   1
+obs_e:234195.0_n:8198194.0_x:8391_y:-1219                     4              obgnme                   1
+obs_e:235327.0_n:8184950.0_x:7259_y:12025                    20              obgnme                   1
+obs_e:235614.0_n:8190354.0_x:6972_y:6621                     14              obgnme                   1
+obs_e:235682.0_n:8187652.0_x:6904_y:9323                     25              obgnme                   1
+obs_e:236163.0_n:8190958.0_x:6423_y:6017                     28              obgnme                   1
+obs_e:236538.0_n:8191417.0_x:6048_y:5558                     20              obgnme                   1
+obs_e:237006.0_n:8202926.0_x:5580_y:-5951                     8              obgnme                   1
+obs_e:237454.0_n:8185525.0_x:5132_y:11450                    20              obgnme                   1
+obs_e:237496.0_n:8190167.0_x:5090_y:6808                     30              obgnme                   1
+obs_e:238665.0_n:8188244.0_x:3921_y:8731                     22              obgnme                   1
+obs_e:238954.0_n:8189678.0_x:3632_y:7297                     29              obgnme                   1
+obs_e:239587.0_n:8185586.0_x:2999_y:11389                     9              obgnme                   1
+obs_e:239760.0_n:8190677.0_x:2826_y:6298                     34              obgnme                   1
+obs_e:240931.0_n:8186974.0_x:1655_y:10001                     9              obgnme                   1
+obs_e:241878.0_n:8190407.0_x:708_y:6568                      14              obgnme                   1
+obs_e:244750.0_n:8189532.0_x:-2164_y:7443                    25              obgnme                   1
+obs_e:244814.0_n:8189459.0_x:-2228_y:7516                     6              obgnme                   1
+obs_e:245486.0_n:8201343.0_x:-2900_y:-4368                    4              obgnme                   1
+
+
+
+Prior information
+
+   no prior information provided
+
+
+
+PEST SVD Information
+    maxsing = 10000000
+    eigthresh = 1e-06
+
+
+
+
+
+
+  ---  initializing  ---  
+...using REDSVD for truncated svd solve
+...maxsing: 10000000
+...eigthresh:  1e-06
+...initializing localizer
+...not using localization
+...using lambda multipliers: 0.1 , 1 , 10 , 
+...using lambda scaling factors: 0.75 , 1 , 1.1 , 
+...acceptable phi factor:  1.05
+...lambda increase factor:  10
+...lambda decrease factor:  0.75
+...max run fail:  1
+...parcov loaded  from parameter bounds, using par_sigma_range 4
+...initializing observation noise covariance matrix
+...obscov loaded  from observation weights
+...using reg_factor:  0
+...drawing parameter realizations:  1000
+...not using prior parameter covariance matrix scaling
+...drawing observation noise realizations:  1000
+...adding 'base' parameter values to ensemble
+...adding 'base' observation values to ensemble
+checking for denormal values in pe
+...saved initial parameter ensemble to  pulu_run.0.par.csv
+checking for denormal values in base oe
+...saved obs+noise observation ensemble (obsval+noise) to  pulu_run.obs+noise.csv
+...centering on ensemble mean vector
+...using subset in lambda testing, number of realizations used in subset testing:  4
+...subset how:  RANDOM
+...running initial ensemble of size 1000
+...saved initial obs ensemble to pulu_run.0.obs.csv
+
+  ---  pre-drop initial phi summary  ---  
+       phi type           mean            std            min            max
+       measured        7120.14        772.391        4318.84         8125.2
+         actual         7100.3        753.076        4500.43         7723.1
+     note: 'measured' phi reported above includes 
+           realizations of measurement noise, 
+           'actual' phi does not.
+
+
+...checking for prior-data conflict...
+
+  ---  WARNING: 17 non-zero weighted observations are in conflict with the prior simulated ensemble.
+  ---  
+
+...conflicted observations: 
+OBS_E:228433.0_N:8192778.0_X:14153_Y:4197
+OBS_E:233194.0_N:8190440.0_X:9392_Y:6535
+OBS_E:233908.0_N:8189011.0_X:8678_Y:7964
+OBS_E:235327.0_N:8184950.0_X:7259_Y:12025
+OBS_E:235614.0_N:8190354.0_X:6972_Y:6621
+OBS_E:235682.0_N:8187652.0_X:6904_Y:9323
+OBS_E:236163.0_N:8190958.0_X:6423_Y:6017
+OBS_E:236538.0_N:8191417.0_X:6048_Y:5558
+OBS_E:237454.0_N:8185525.0_X:5132_Y:11450
+OBS_E:237496.0_N:8190167.0_X:5090_Y:6808
+OBS_E:238665.0_N:8188244.0_X:3921_Y:8731
+OBS_E:238954.0_N:8189678.0_X:3632_Y:7297
+OBS_E:239587.0_N:8185586.0_X:2999_Y:11389
+OBS_E:239760.0_N:8190677.0_X:2826_Y:6298
+OBS_E:240931.0_N:8186974.0_X:1655_Y:10001
+OBS_E:241878.0_N:8190407.0_X:708_Y:6568
+OBS_E:244750.0_N:8189532.0_X:-2164_Y:7443
+...  WARNING: Prior-data conflict detected.  Continuing with IES parameter
+           adjustment will likely result in parameter and forecast bias.
+           Consider using 'ies_drop_conflicts' as a quick fix.
+...updated observation data information written to file  pulu_run.adjusted.obs_data.csv
+
+  ---  initial phi summary  ---  
+       phi type           mean            std            min            max
+       measured        7120.14        772.391        4318.84         8125.2
+         actual         7100.3        753.076        4500.43         7723.1
+     note: 'measured' phi reported above includes 
+           realizations of measurement noise, 
+           'actual' phi does not.
+
+
+...current lambda: 100
+
+  ---  initialization complete  ---  
