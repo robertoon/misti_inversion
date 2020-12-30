@@ -65,7 +65,7 @@ def get_custom_points():
     read (x y) points from input file of locations of interest
     for tephra load calculation
     '''
-    point_x, point_y = np.genfromtxt(CUSTOM_POINTS_FILE, unpack=True)
+    point_x, point_y,_ = np.genfromtxt(CUSTOM_POINTS_FILE, unpack=True)
 
     return (
         {'x': x, 'y': y} for x, y in zip(point_x, point_y)
