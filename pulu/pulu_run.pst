@@ -56,4 +56,4 @@ python main.py
 * model input/output
 ./config_pulu.py.tpl ./config_pulu.py
 ./pulu_sim.dat.ins ./pulu_sim.dat
-++glm_num_reals(200)
+++glm_num_reals(500)

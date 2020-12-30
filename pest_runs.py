@@ -198,7 +198,7 @@ def pulu_run_glm():
     """run pestpp-glm in parallel locally"""
     pst = pyemu.Pst(os.path.join("pulu", "pulu.pst"))
     pst.control_data.noptmax = 5
-    pst.pestpp_options["glm_num_reals"] = 200
+    pst.pestpp_options["glm_num_reals"] = 500
 
     pst.write(os.path.join("pulu", "pulu_run.pst"))
     # pyemu.os_utils.run("pestpp-ies pulu_run.pst")
