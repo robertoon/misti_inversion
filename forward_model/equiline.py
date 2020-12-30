@@ -10,8 +10,8 @@ p1 = [0, 40]
 p2 = [0, 40]
 
 X, Y = [], []
-x = np.genfromtxt(r'./observed.txt', unpack = True)
-y = np.genfromtxt(r'./output_misti.txt', unpack = True)
+x = np.genfromtxt(r'./forward_model/observed.txt', unpack = True)
+y = np.genfromtxt(r'./forward_model/output_misti.txt', unpack = True)
 
 for idx, lon in enumerate(x):
         X.append(lon)
@@ -35,5 +35,5 @@ plt.axis([0,40, 0, 40], aspect="auto")
 plt.xlabel('Observed thickness (cm)', fontsize=12)
 plt.ylabel('Modeled thickness (cm)', fontsize=12)
 plt.title('Disk source')
-plt.show()
-#plt.savefig('Equiline_plot.png', figsize=(3.5, 1.75), dpi=300, facecolor='w', edgecolor='k')
+#plt.show()
+plt.savefig('Equiline_plot.png', figsize=(3.5, 1.75), dpi=300, facecolor='w', edgecolor='k')
