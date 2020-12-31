@@ -256,19 +256,142 @@ def pulu_plot_glm_results():
     plt.show()
 
 
+
+def setup(case="misti"):
+    # run the model one
+    shutil.copy2(os.path.join(case, "org_config.py"), os.path.join(case, "config.py"))
+    pyemu.os_utils.run("python main.py", cwd=case)
+
+    # prepare the interface files
+    output_filename = os.path.join(case, "output_misti.txt")
+    ins_filename, obs_df = write_output_ins_file(output_filename)
+    config_filename = os.path.join(os.path.join(case, "config.py"))
+    tpl_filename, par_df = write_config_tpl_file(config_filename)
+
+    # create a control file instance
+    pst = pyemu.Pst.from_io_files(tpl_files=tpl_filename, in_files=config_filename, ins_files=ins_filename,
+                                  out_files=output_filename, pst_path=".")
+
+    # set the observation values
+    pst.observation_data.loc[obs_df.obsnme, "obsval"] = obs_df.obsval
+
+    # set the parameter information for the pulu pars
+    par = pst.parameter_data
+    # start by fixing all the parameters in the control file
+    par.loc[:, "partrans"] = "fixed"
+
+    par.loc["total_erupted_mass", "parlbnd"] = 1E+10
+    par.loc["total_erupted_mass", "parubnd"] = 1e13
+    par.loc["total_erupted_mass", "parval1"] = 8.2e10
+    par.loc["total_erupted_mass", "partrans"] = "log"
+
+    par.loc["column_height", "parlbnd"] = 15000
+    par.loc["column_height", "parubnd"] = 25000
+    par.loc["column_height", "parval1"] = 21000
+    par.loc["column_height", "partrans"] = "log"
+
+    par.loc["diffusion_coef", "parlbnd"] = 1000
+    par.loc["diffusion_coef", "parubnd"] = 10000
+    par.loc["diffusion_coef", "parval1"] = 5000
+    par.loc["diffusion_coef", "partrans"] = "log"
+
+    # it looks like mean grainsize is already in log space?
+    par.loc["tgsd_mean", "parlbnd"] = -5
+    par.loc["tgsd_mean", "parubnd"] = +5
+    par.loc["tgsd_mean", "parval1"] = -1.99
+    par.loc["tgsd_mean", "partrans"] = "none"
+    par.loc["tgsd_mean", "parchglim"] = "relative"
+
+    par.loc["ellipse_major_axis", "parlbnd"] = 6000 
+    par.loc["ellipse_major_axis", "parubnd"] = 15000
+    par.loc["ellipse_major_axis", "parval1"] = 11500
+    par.loc["ellipse_major_axis", "partrans"] = "log"
+
+    par.loc["ellipse_minor_axis", "parlbnd"] = 6000
+    par.loc["ellipse_minor_axis", "parubnd"] = 15000
+    par.loc["ellipse_minor_axis", "parval1"] = 11500
+    par.loc["ellipse_minor_axis", "partrans"] = "log"
+
+
+    # par.loc["ellipse_major_axis", "parlbnd"] = 5000
+    # par.loc["ellipse_major_axis", "parubnd"] = 15000
+    # par.loc["ellipse_major_axis", "parval1"] = 8000
+    # par.loc["ellipse_minor_axis", "parval1"] = 5000
+
+    # # tie the minor axis par to the major so they function
+    # # as a single radius
+    # par.loc["ellipse_major_axis", "partrans"] = "none"
+    # #par.loc["ellipse_minor_axis", "partrans"] = "tied"
+    # par.loc["ellipse_minor_axis", "partied"] = "ellipse_major_axis"
+  
+    par.loc["wind_speed", "parlbnd"] = 1
+    par.loc["wind_speed", "parubnd"] = 8
+    par.loc["wind_speed", "parval1"] = 5
+    par.loc["wind_speed", "partrans"] = "log"
+
+    par.loc["wind_direction", "parlbnd"] = 205
+    par.loc["wind_direction", "parubnd"] = 225
+    par.loc["wind_direction", "parval1"] = 217
+    par.loc["wind_direction", "partrans"] = "log"
+
+    # set the observed thickness values
+    pst.try_parse_name_metadata()  # this sets individual columns for northing and easting
+
+    pst.write(os.path.join(case, case+".pst"))
+
+    obs = pst.observation_data
+    # read the observed data
+    df = pd.read_csv(os.path.join(case, case+"_grainsize.csv"))
+    df.columns = df.columns.map(lambda x: x.lower().replace(" ", "_"))
+
+    # for each observation...
+    for oname, oe, on in zip(obs.obsnme, obs.e, obs.n):
+        # find the location based on easting and northing (not the relative, the absolute)
+        print(oe,on)
+        v = df.loc[df.apply(lambda x: x.easting == float(oe) and x.northing == float(on), axis=1), "thickness"].values[
+            0]
+
+        # set the observed value
+        obs.loc[oname, "obsval"] = v
+
+    # set the model forward run command
+    pst.model_command = "python main.py"
+
+    # run pestpp-glm for a single one-off forward run
+    pst.control_data.noptmax = 0
+    pst.write(os.path.join(case, case+".pst"))
+    pyemu.os_utils.run("pestpp-glm {0}.pst".format(case), cwd=case)
+    pst = pyemu.Pst(os.path.join(case, case+".pst"))
+    pst.plot(kind="1to1")
+    plt.show()
+
+
+def run_glm(case,noptmax=5,num_reals=100):
+    """run pestpp-glm in parallel locally"""
+    pst = pyemu.Pst(os.path.join(case, case+".pst"))
+    pst.control_data.noptmax = noptmax
+    pst.pestpp_options["glm_num_reals"] = num_reals
+
+    pst.write(os.path.join(case, case+"_run.pst"))
+    pyemu.os_utils.start_workers(case, "pestpp-glm", case+"_run.pst", num_workers=10,
+                                 master_dir=case+"_glm_master")
+
 if __name__ == "__main__":
-    start=time()
-    setup_pulu()
-    pulu_run_prior_mc()
-    end=time()
+    setup(case="misti")
+    run_glm("misti")
+
+    # start=time()
+    # setup_pulu()
+    # pulu_run_prior_mc()
+    # end=time()
 
     # start=time()
     # pulu_run_ies()
     # pulu_plot_ies_results()
     # end=time()
  
-    start=time()
-    pulu_run_glm()
-    pulu_plot_glm_results()
-    end=time()  
-    print("total execution=",end-start)
+    # start=time()
+    # pulu_run_glm()
+    # pulu_plot_glm_results()
+    # end=time()  
+    # print("total execution=",end-start)
