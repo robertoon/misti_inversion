@@ -1,5 +1,0 @@
-iteration,column_height,diffusion_coef,ellipse_major_axis,ellipse_minor_axis,tgsd_mean,tgsd_sigma,total_erupted_mass,wind_direction,wind_speed
-0,21000,5000,11500,11500,-1.99,1,1e+10,217,5
-1,21000,5000,11500,11500,-1.99,1,1e+11,217,5
-2,21000,5000,11500,11500,-1.99,1,1e+11,217,5
-3,21000,5000,11500,11500,-1.99,1,1e+11,217,5

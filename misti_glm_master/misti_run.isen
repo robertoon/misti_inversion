@@ -1,0 +1,4 @@
+iteration,column_height,diffusion_coef,ellipse_major_axis,ellipse_minor_axis,tgsd_mean,tgsd_sigma,total_erupted_mass,wind_direction,wind_speed
+1,0,0,0,0,0,-999,0,0,0
+2,0,0,0,0,0,-999,0,0,0
+3,0,0,0,0,0,-999,0,0,0

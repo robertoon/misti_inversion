@@ -1,0 +1,5 @@
+iteration,model_runs_completed,total_phi,measurement_phi,regularization_phi,obgnme
+0,0,7763,7763,0,7763
+1,19,7763,7763,0,7763
+2,37,7763,7763,0,7763
+3,63,7763,7763,0,7763

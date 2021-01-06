@@ -257,7 +257,7 @@ def pulu_plot_glm_results():
 
 
 
-def setup(case="misti"):
+def setup(case):
     # run the model one
     shutil.copy2(os.path.join(case, "org_config.py"), os.path.join(case, "config.py"))
     pyemu.os_utils.run("python main.py", cwd=case)
@@ -363,10 +363,10 @@ def setup(case="misti"):
     pyemu.os_utils.run("pestpp-glm {0}.pst".format(case), cwd=case)
     pst = pyemu.Pst(os.path.join(case, case+".pst"))
     pst.plot(kind="1to1")
-    plt.show()
+    #plt.show()
 
 
-def run_glm(case,noptmax=5,num_reals=100):
+def run_glm(case,noptmax=5,num_reals=10):
     """run pestpp-glm in parallel locally"""
     pst = pyemu.Pst(os.path.join(case, case+".pst"))
     pst.control_data.noptmax = noptmax
@@ -376,14 +376,40 @@ def run_glm(case,noptmax=5,num_reals=100):
     pyemu.os_utils.start_workers(case, "pestpp-glm", case+"_run.pst", num_workers=10,
                                  master_dir=case+"_glm_master")
 
-if __name__ == "__main__":
-    setup(case="misti")
-    run_glm("misti")
 
-    # start=time()
-    # setup_pulu()
-    # pulu_run_prior_mc()
-    # end=time()
+def plot_glm_results(case):
+    """plot the pestpp-glm results"""
+    m_d = case+"_glm_master"
+    pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
+
+    pt_pe = pd.read_csv(os.path.join(m_d, case+"_run.post.paren.csv"), index_col=0)
+    pt_oe = pd.read_csv(os.path.join(m_d, case+"_run.post.obsen.csv"), index_col=0)
+
+    pt_pe = pt_pe.loc[:, pst.adj_par_names]
+
+    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=40,
+                                     filename=os.path.join(m_d, case+"_summary.pdf"))
+    # plt.show()
+    obs = pst.observation_data
+    pyemu.plot_utils.ensemble_helper({"b": pt_oe},
+                                     deter_vals=obs.obsval.to_dict(),
+                                     bins=40,
+                                     filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
+    pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
+                                       filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"))
+    #plt.show()
+
+if __name__ == "__main__":
+    volcano = "misti" # working directory with volcano data
+    setup(volcano)
+    run_glm(volcano)
+    plot_glm_results(volcano)
+    
+
+    #start=time()
+    #setup_pulu()
+    #pulu_run_prior_mc()
+    #end=time()
 
     # start=time()
     # pulu_run_ies()
@@ -391,7 +417,8 @@ if __name__ == "__main__":
     # end=time()
  
     # start=time()
-    # pulu_run_glm()
+    #pulu_run_glm()
+    
     # pulu_plot_glm_results()
     # end=time()  
     # print("total execution=",end-start)
