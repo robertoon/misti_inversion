@@ -230,7 +230,7 @@ def pulu_plot_ies_results():
                                      filename=os.path.join(m_d, "pulu_ies_obs_summary.pdf"))
     pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"0.5": pr_oe, "b": pt_oe},
                                        filename=os.path.join(m_d, "pulu_ies_obs_vs_sim.pdf"))
-    plt.show()
+   # plt.show()
 
 
 def pulu_plot_glm_results():
@@ -253,7 +253,7 @@ def pulu_plot_glm_results():
                                      filename=os.path.join(m_d, "pulu_glm_obs_summary.pdf"))
     pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
                                        filename=os.path.join(m_d, "pulu_glm_obs_vs_sim.pdf"))
-    plt.show()
+    # plt.show()
 
 
 
@@ -280,13 +280,13 @@ def setup(case):
     # start by fixing all the parameters in the control file
     par.loc[:, "partrans"] = "fixed"
 
-    par.loc["total_erupted_mass", "parlbnd"] = 1E+10
-    par.loc["total_erupted_mass", "parubnd"] = 1e13
+    par.loc["total_erupted_mass", "parlbnd"] = 1e10
+    par.loc["total_erupted_mass", "parubnd"] = 1e12
     par.loc["total_erupted_mass", "parval1"] = 8.2e10
     par.loc["total_erupted_mass", "partrans"] = "log"
 
     par.loc["column_height", "parlbnd"] = 15000
-    par.loc["column_height", "parubnd"] = 25000
+    par.loc["column_height", "parubnd"] = 29000
     par.loc["column_height", "parval1"] = 21000
     par.loc["column_height", "partrans"] = "log"
 
@@ -303,7 +303,7 @@ def setup(case):
     par.loc["tgsd_mean", "parchglim"] = "relative"
 
     par.loc["ellipse_major_axis", "parlbnd"] = 6000 
-    par.loc["ellipse_major_axis", "parubnd"] = 15000
+    par.loc["ellipse_major_axis", "parubnd"] = 18000
     par.loc["ellipse_major_axis", "parval1"] = 11500
     par.loc["ellipse_major_axis", "partrans"] = "log"
 
@@ -366,7 +366,7 @@ def setup(case):
     #plt.show()
 
 
-def run_glm(case,noptmax=5,num_reals=10):
+def run_glm(case,noptmax=10,num_reals=2000):
     """run pestpp-glm in parallel locally"""
     pst = pyemu.Pst(os.path.join(case, case+".pst"))
     pst.control_data.noptmax = noptmax
@@ -387,13 +387,13 @@ def plot_glm_results(case):
 
     pt_pe = pt_pe.loc[:, pst.adj_par_names]
 
-    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=40,
+    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=60,
                                      filename=os.path.join(m_d, case+"_summary.pdf"))
-    # plt.show()
+    #plt.show()
     obs = pst.observation_data
     pyemu.plot_utils.ensemble_helper({"b": pt_oe},
                                      deter_vals=obs.obsval.to_dict(),
-                                     bins=40,
+                                     bins=60,
                                      filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
     pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
                                        filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"))
@@ -401,10 +401,14 @@ def plot_glm_results(case):
 
 if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
+
+    start=time()
     setup(volcano)
     run_glm(volcano)
     plot_glm_results(volcano)
-    
+    end=time()
+    print("total execution=",end-start)
+
 
     #start=time()
     #setup_pulu()

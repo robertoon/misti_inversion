@@ -41,8 +41,8 @@ if RUN_MODE == 'custom points':
     df = pd.read_csv("misti_grainsize.csv")
     df.columns = df.columns.map(lambda x: x.lower().replace(" ","_"))
     df.loc[:,"site_name"] = df.apply(lambda x: "e:{0}_n:{1}".format(x.easting,x.northing),axis=1)
-    df.loc[:,"easting"] = VENT_EASTING - df.easting
-    df.loc[:,"northing"] = VENT_NORTHING - df.northing
+    df.loc[:,"easting"] = df.easting
+    df.loc[:,"northing"] = df.northing
 
     ground_points = [{"x":e,"y":n,"site_name":s} for e,n,s in zip(df.easting,df.northing,df.site_name)]
 
