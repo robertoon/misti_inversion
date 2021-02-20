@@ -366,7 +366,7 @@ def setup(case):
     #plt.show()
 
 
-def run_glm(case,noptmax=10,num_reals=2000):
+def run_glm(case,noptmax=50,num_reals=5000):
     """run pestpp-glm in parallel locally"""
     pst = pyemu.Pst(os.path.join(case, case+".pst"))
     pst.control_data.noptmax = noptmax
@@ -387,13 +387,13 @@ def plot_glm_results(case):
 
     pt_pe = pt_pe.loc[:, pst.adj_par_names]
 
-    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=60,
+    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=100,
                                      filename=os.path.join(m_d, case+"_summary.pdf"))
     #plt.show()
     obs = pst.observation_data
     pyemu.plot_utils.ensemble_helper({"b": pt_oe},
                                      deter_vals=obs.obsval.to_dict(),
-                                     bins=60,
+                                     bins=100,
                                      filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
     pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
                                        filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"))
