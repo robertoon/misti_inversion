@@ -244,15 +244,31 @@ def plot_glm_results(case,pmc_dir=None):
     #plt.show()
 
 
+def sensitivity_experiment():
+    case = "misti"
+    pst = pyemu.Pst(os.path.join(case, case + ".pst"))
+    pst.control_data.noptmax = 0
+    pst.write(os.path.join(case, case + ".pst"))
+    pyemu.os_utils.run("pestpp-glm {0}.pst".format(case),cwd=case)
+    pst = pyemu.Pst(os.path.join(case, case + ".pst"))
+    base_phi = pst.phi
+    pst.parameter_data.loc["wind_speed","parval1"] *= 100
+    pst.write(os.path.join(case, case + ".pst"))
+    pyemu.os_utils.run("pestpp-glm {0}.pst".format(case), cwd=case)
+    pst = pyemu.Pst(os.path.join(case, case + ".pst"))
+    pert_phi = pst.phi
+    print("base phi:",base_phi,,"perturbed phi:", pert_phi)
+
 
 if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
     #setup(volcano)
+    sensitivity_experiment()
     #run_prior_monte_carlo(volcano,num_reals=1000)
     #run_glm(volcano,num_reals=1000)
-    plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
+    #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)
 
