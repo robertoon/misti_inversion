@@ -238,6 +238,9 @@ def plot_glm_results(case,pmc_dir=None):
         pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"0.5":pr_oe,"b": pt_oe},alpha=0.5,
                                        filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"),
                                        base_ensemble=os.path.join(pmc_dir,case+"_run.obs+noise.csv"))
+        pst.parameter_data.loc[:,"pargp"] = pst.par_names
+        pyemu.plot_utils.ensemble_change_summary(pst=pst, ensemble1=pr_pe,ensemble2=pt_pe,
+                                       filename=os.path.join(m_d, case+"_glm_par_change_summary.pdf"))
     #plt.show()
 
 
@@ -247,8 +250,8 @@ if __name__ == "__main__":
 
     start=time()
     #setup(volcano)
-    run_prior_monte_carlo(volcano,num_reals=1000)
-    run_glm(volcano,num_reals=1000)
+    #run_prior_monte_carlo(volcano,num_reals=1000)
+    #run_glm(volcano,num_reals=1000)
     plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)
