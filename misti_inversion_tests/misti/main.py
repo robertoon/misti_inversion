@@ -3,9 +3,9 @@ import time
 import numpy as np
 import pandas as pd
 from math import sqrt
-#from src.config import *
+from src.config import *
 #sys.path.append("..")
-from config import *
+#from config import *
 from src.grids import (
     generate_ellipse_grid,
     generate_ground_grid,

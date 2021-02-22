@@ -40,7 +40,7 @@ def settling_velocity(phi):
     '''calculate settling velocity for given phi class'''
     v_aux = 0
 
-    for atm_layer in range(ATMOSPHERE_LEVEL_STEP, UMBRELLA_HEIGHT + ATMOSPHERE_LEVEL_STEP, ATMOSPHERE_LEVEL_STEP):
+    for atm_layer in np.arange(ATMOSPHERE_LEVEL_STEP, UMBRELLA_HEIGHT + ATMOSPHERE_LEVEL_STEP, ATMOSPHERE_LEVEL_STEP):
         v_layer = 0
 
         elev = UMBRELLA_HEIGHT - atm_layer

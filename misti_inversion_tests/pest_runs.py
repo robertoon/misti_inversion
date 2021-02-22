@@ -68,7 +68,6 @@ def write_output_ins_file(output_filename):
     df = pd.DataFrame({"obsnme": obs_names, "obsval": obs_vals}, index=obs_names)
     return ins_filename, df
 
-
 def setup(case):
     # run the model one
     shutil.copy2(os.path.join(case, "org_config.py"), os.path.join(case, "config.py"))
@@ -83,7 +82,7 @@ def setup(case):
     # create a control file instance
     pst = pyemu.Pst.from_io_files(tpl_files=tpl_filename, in_files=config_filename, ins_files=ins_filename,
                                   out_files=output_filename, pst_path=".")
-
+    pst.model_input_data.iloc[0,:].loc["model_file"] = os.path.join("src",os.path.split(config_filename)[-1])
     # set the observation values
     pst.observation_data.loc[obs_df.obsnme, "obsval"] = obs_df.obsval
 
@@ -93,18 +92,18 @@ def setup(case):
     par.loc[:, "partrans"] = "fixed"
 
     par.loc["total_erupted_mass", "parlbnd"] = 1.3e10
-    par.loc["total_erupted_mass", "parubnd"] = 6.8e10
-    par.loc["total_erupted_mass", "parval1"] = 6.3e10
+    par.loc["total_erupted_mass", "parubnd"] = 6.8e12
+    par.loc["total_erupted_mass", "parval1"] = 6.3e11
     par.loc["total_erupted_mass", "partrans"] = "log"
 
     par.loc["column_height", "parlbnd"] = 21000
-    par.loc["column_height", "parubnd"] = 31000
-    par.loc["column_height", "parval1"] = 26000
+    par.loc["column_height", "parubnd"] = 40000
+    par.loc["column_height", "parval1"] = 30000
     par.loc["column_height", "partrans"] = "log"
 
     par.loc["diffusion_coef", "parlbnd"] = 1000
-    par.loc["diffusion_coef", "parubnd"] = 2000
-    par.loc["diffusion_coef", "parval1"] = 1500
+    par.loc["diffusion_coef", "parubnd"] = 10000
+    par.loc["diffusion_coef", "parval1"] = 5000
     par.loc["diffusion_coef", "partrans"] = "log"
 
     # it looks like mean grainsize is already in log space?
@@ -126,13 +125,13 @@ def setup(case):
     par.loc["ellipse_minor_axis", "partied"] = "ellipse_major_axis"
   
     par.loc["wind_speed", "parlbnd"] = 1.0
-    par.loc["wind_speed", "parubnd"] = 7.0
-    par.loc["wind_speed", "parval1"] = 4.0
+    par.loc["wind_speed", "parubnd"] = 10.0
+    par.loc["wind_speed", "parval1"] = 5.0
     par.loc["wind_speed", "partrans"] = "log"
 
-    par.loc["wind_direction", "parlbnd"] = 210
-    par.loc["wind_direction", "parubnd"] = 226
-    par.loc["wind_direction", "parval1"] = 218
+    par.loc["wind_direction", "parlbnd"] = 180
+    par.loc["wind_direction", "parubnd"] = 270
+    par.loc["wind_direction", "parval1"] = 230
     par.loc["wind_direction", "partrans"] = "log"
 
     # set the observed thickness values
@@ -167,31 +166,31 @@ def setup(case):
     #plt.show()
 
 
-def run_glm(case,noptmax=5,num_reals=3000):
+def run_glm(case,noptmax=5,num_reals=3000,num_workers=10):
     """run pestpp-glm in parallel locally"""
     pst = pyemu.Pst(os.path.join(case, case+".pst"))
     pst.control_data.noptmax = noptmax
     pst.pestpp_options["glm_num_reals"] = num_reals
 
     pst.write(os.path.join(case, case+"_run.pst"))
-    pyemu.os_utils.start_workers(case, "pestpp-glm", case+"_run.pst", num_workers=10,
+    pyemu.os_utils.start_workers(case, "pestpp-glm", case+"_run.pst", num_workers=num_workers,
                                  master_dir=case+"_glm_master")
 
 
-def run_prior_monte_carlo(case,num_reals=3000):
+def run_prior_monte_carlo(case,num_reals=3000,num_workers=10):
     pst = pyemu.Pst(os.path.join(case, case+".pst"))
     pst.control_data.noptmax = -1
     pst.pestpp_options["ies_num_reals"] = num_reals
 
     pst.write(os.path.join(case, case+"_run.pst"))
-    pyemu.os_utils.start_workers(case, "pestpp-ies", case+"_run.pst", num_workers=10,
+    pyemu.os_utils.start_workers(case, "pestpp-ies", case+"_run.pst", num_workers=num_workers,
                                  master_dir=case+"_pmc_master")
 
 def plot_glm_results(case,pmc_dir=None):
     """plot the pestpp-glm results"""
     m_d = case+"_glm_master"
     pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
-    print(pst.phi)
+    #print(pst.phi)
     
     if pmc_dir is not None:
         pr_oe = pd.read_csv(os.path.join(pmc_dir, case+"_run.0.obs.csv"), index_col=0)
@@ -204,6 +203,14 @@ def plot_glm_results(case,pmc_dir=None):
     pt_oe = pd.read_csv(os.path.join(m_d, case+"_run.post.obsen.csv"), index_col=0)
     pt_oe = pyemu.ObservationEnsemble(pst=pst,df=pt_oe)
 
+    # rejection sampling - only keep posterior realizations that are within 50% of the best phi
+
+    pt_pv = pt_oe.phi_vector
+    best_phi = min(pst.phi,pt_pv.min())
+    print(pst.phi,best_phi)
+    pt_pv = pt_pv.loc[pt_pv<best_phi*1.5]
+    pt_pe = pt_pe.loc[pt_pv.index,:]
+    pt_oe = pt_oe.loc[pt_pv.index,:]
 
     fig,ax = plt.subplots(1,1,figsize=(4,4))
     if pmc_dir is not None:
@@ -257,7 +264,7 @@ def sensitivity_experiment():
     pyemu.os_utils.run("pestpp-glm {0}.pst".format(case), cwd=case)
     pst = pyemu.Pst(os.path.join(case, case + ".pst"))
     pert_phi = pst.phi
-    print("base phi:",base_phi,,"perturbed phi:", pert_phi)
+    print("base phi:",base_phi,"perturbed phi:", pert_phi)
 
 
 if __name__ == "__main__":
@@ -265,10 +272,10 @@ if __name__ == "__main__":
 
     start=time()
     #setup(volcano)
-    sensitivity_experiment()
-    #run_prior_monte_carlo(volcano,num_reals=1000)
-    #run_glm(volcano,num_reals=1000)
-    #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
+    #sensitivity_experiment()
+    run_prior_monte_carlo(volcano,num_reals=1000,num_workers=15)
+    run_glm(volcano,num_reals=1000,num_workers=15)
+    plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)
 
