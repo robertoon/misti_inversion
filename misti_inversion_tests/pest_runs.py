@@ -1,6 +1,7 @@
 import os
 from time import time
 import shutil
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pyemu
@@ -203,20 +204,21 @@ def plot_glm_results(case,pmc_dir=None):
     pt_oe = pd.read_csv(os.path.join(m_d, case+"_run.post.obsen.csv"), index_col=0)
     pt_oe = pyemu.ObservationEnsemble(pst=pst,df=pt_oe)
 
-    # rejection sampling - only keep posterior realizations that are within 50% of the best phi
-
+    # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
     pt_pv = pt_oe.phi_vector
     best_phi = min(pst.phi,pt_pv.min())
-    print(pst.phi,best_phi)
-    pt_pv = pt_pv.loc[pt_pv<best_phi*1.5]
+    acc_phi = best_phi * 2.0
+    pt_pv = pt_pv.loc[pt_pv<acc_phi]
     pt_pe = pt_pe.loc[pt_pv.index,:]
     pt_oe = pt_oe.loc[pt_pv.index,:]
-
+    print("glm phi:",pst.phi, "best phi:",best_phi,"passing realizations:",pt_oe.shape[0])
     fig,ax = plt.subplots(1,1,figsize=(4,4))
     if pmc_dir is not None:
-        ax.hist(pr_oe.phi_vector,bins=20,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
-    ax.hist(pt_oe.phi_vector,bins=20,facecolor="b",alpha=0.5,edgecolor="none",density=False)
+        ax.hist(pr_oe.phi_vector.apply(np.log10),bins=20,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
+    ax.hist(pt_oe.phi_vector.apply(np.log10),bins=20,facecolor="b",alpha=0.5,edgecolor="none",density=False)
     ax.plot([pst.phi,pst.phi],ax.get_ylim(),"b--")
+    ax.set_title("best phi:{0:5.2E}, acceptable phi:{1:5.2E}, number of realizations passing: {2}".format(best_phi,acc_phi,pt_oe.shape[0]))
+    ax.set_xlabel("$log_{10} \phi$")
     plt.savefig(os.path.join(m_d,"phi_hist.pdf"))
     plt.close(fig)
   
@@ -272,10 +274,10 @@ if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    #setup(volcano)
+    setup(volcano)
     #sensitivity_experiment()
-    #run_prior_monte_carlo(volcano,num_reals=3000,num_workers=15)
-    #run_glm(volcano,num_reals=3000,num_workers=15)
+    run_prior_monte_carlo(volcano,num_reals=3000,num_workers=15)
+    run_glm(volcano,num_reals=3000,num_workers=15)
     plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)
