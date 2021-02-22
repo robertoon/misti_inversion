@@ -241,7 +241,8 @@ def plot_glm_results(case,pmc_dir=None):
         pyemu.plot_utils.ensemble_helper({"b": pt_oe,"0.5":pr_oe},
                                          deter_vals=obs.obsval.to_dict(),
                                          bins=100,
-                                         filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
+                                         filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"),
+                                         std_window=0.5,deter_range=True,sync_bins=False)
         pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"0.5":pr_oe,"b": pt_oe},alpha=0.5,
                                        filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"),
                                        base_ensemble=os.path.join(pmc_dir,case+"_run.obs+noise.csv"))
@@ -271,10 +272,10 @@ if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    setup(volcano)
+    #setup(volcano)
     #sensitivity_experiment()
-    run_prior_monte_carlo(volcano,num_reals=3000,num_workers=15)
-    run_glm(volcano,num_reals=3000,num_workers=15)
+    #run_prior_monte_carlo(volcano,num_reals=3000,num_workers=15)
+    #run_glm(volcano,num_reals=3000,num_workers=15)
     plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)
