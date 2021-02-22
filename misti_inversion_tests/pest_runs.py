@@ -271,10 +271,10 @@ if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    #setup(volcano)
+    setup(volcano)
     #sensitivity_experiment()
-    run_prior_monte_carlo(volcano,num_reals=1000,num_workers=15)
-    run_glm(volcano,num_reals=1000,num_workers=15)
+    run_prior_monte_carlo(volcano,num_reals=3000,num_workers=15)
+    run_glm(volcano,num_reals=3000,num_workers=15)
     plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)

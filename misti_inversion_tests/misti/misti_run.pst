@@ -6,7 +6,7 @@ pcf
    2.000000E+01  -3.000000E+00   3.000000E-01   1.000000E-02        -7       999          lamforgive        noderforgive
    1.000000E+01   1.000000E+01   1.000000E-03         0         0
    1.000000E-01         1   1.100000E+00               noaui          nosenreuse        noboundscale
-        -1   1.000000E-02         3         3   1.000000E-02         3   0.000000E+00         1  -1.000000E+00
+         5   1.000000E-02         3         3   1.000000E-02         3   0.000000E+00         1  -1.000000E+00
          0         0         0         0             jcosave          verboserec          jcosaveitn          reisaveitn          parsaveitn        noparsaverun
 * singular value decomposition
          1
@@ -15,15 +15,15 @@ pcf
 * parameter groups
  pargp                   relative              1.0000000000E-02       0.0  switch                2.0000000000E+00       parabolic              1.0000000000E-05       5.0000000000E-01       smaller              
 * parameter data
- column_height          log                    factor                2.6000000000E+04      2.1000000000E+04      3.1000000000E+04       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- diffusion_coef         log                    factor                1.5000000000E+03      1.0000000000E+03      2.0000000000E+03       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ column_height          log                    factor                3.0000000000E+04      2.1000000000E+04      4.0000000000E+04       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ diffusion_coef         log                    factor                5.0000000000E+03      1.0000000000E+03      1.0000000000E+04       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  ellipse_major_axis     none                   factor                1.1500000000E+04      5.0000000000E+03      1.8000000000E+04       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  ellipse_minor_axis     tied                   factor                1.1500000000E+04      1.1000000000E-10      1.1000000000E+10       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  tgsd_mean              none                   relative              -1.9900000000E+00     -6.0000000000E+00     6.0000000000E+00       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  tgsd_sigma             fixed                  factor                1.0000000000E+00      1.1000000000E-10      1.1000000000E+10       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- total_erupted_mass     log                    factor                6.3000000000E+10      1.3000000000E+10      6.8000000000E+10       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- wind_direction         log                    factor                2.1800000000E+02      2.1000000000E+02      2.2600000000E+02       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- wind_speed             log                    factor                4.0000000000E+00      1.0000000000E+00      7.0000000000E+00       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ total_erupted_mass     log                    factor                6.3000000000E+11      1.3000000000E+10      6.8000000000E+12       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ wind_direction         log                    factor                2.3000000000E+02      1.8000000000E+02      2.7000000000E+02       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ wind_speed             log                    factor                5.0000000000E+00      1.0000000000E+00      1.0000000000E+01       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  ellipse_minor_axis     ellipse_major_axis   
 * observation groups
 obgnme               
@@ -63,4 +63,4 @@ python main.py
 * model input/output
 ./config.py.tpl src/config.py
 ./output_misti.txt.ins ./output_misti.txt
-++ies_num_reals(1000)
+++glm_num_reals(100)
