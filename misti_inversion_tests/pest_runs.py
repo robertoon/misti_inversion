@@ -178,35 +178,78 @@ def run_glm(case,noptmax=5,num_reals=3000):
                                  master_dir=case+"_glm_master")
 
 
-def plot_glm_results(case):
+def run_prior_monte_carlo(case,num_reals=3000):
+    pst = pyemu.Pst(os.path.join(case, case+".pst"))
+    pst.control_data.noptmax = -1
+    pst.pestpp_options["ies_num_reals"] = num_reals
+
+    pst.write(os.path.join(case, case+"_run.pst"))
+    pyemu.os_utils.start_workers(case, "pestpp-ies", case+"_run.pst", num_workers=10,
+                                 master_dir=case+"_pmc_master")
+
+def plot_glm_results(case,pmc_dir=None):
     """plot the pestpp-glm results"""
     m_d = case+"_glm_master"
     pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
+    print(pst.phi)
+    
+    if pmc_dir is not None:
+        pr_oe = pd.read_csv(os.path.join(pmc_dir, case+"_run.0.obs.csv"), index_col=0)
+        pr_oe = pyemu.ObservationEnsemble(pst=pst,df=pr_oe)
+        pr_pe = pd.read_csv(os.path.join(pmc_dir, case+"_run.0.par.csv"), index_col=0)
+        pr_pe = pr_pe.loc[:,pst.adj_par_names]
+
 
     pt_pe = pd.read_csv(os.path.join(m_d, case+"_run.post.paren.csv"), index_col=0)
     pt_oe = pd.read_csv(os.path.join(m_d, case+"_run.post.obsen.csv"), index_col=0)
+    pt_oe = pyemu.ObservationEnsemble(pst=pst,df=pt_oe)
 
+
+    fig,ax = plt.subplots(1,1,figsize=(4,4))
+    if pmc_dir is not None:
+        ax.hist(pr_oe.phi_vector,bins=20,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
+    ax.hist(pt_oe.phi_vector,bins=20,facecolor="b",alpha=0.5,edgecolor="none",density=False)
+    ax.plot([pst.phi,pst.phi],ax.get_ylim(),"b--")
+    plt.savefig(os.path.join(m_d,"phi_hist.pdf"))
+    plt.close(fig)
+  
     pt_pe = pt_pe.loc[:, pst.adj_par_names]
 
-    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=100,
-                                     filename=os.path.join(m_d, case+"_summary.pdf"))
+    if pmc_dir is None:
+        pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=100,
+                                         filename=os.path.join(m_d, case+"_summary.pdf"))
+    else:
+        pyemu.plot_utils.ensemble_helper({"b": pt_pe,"0.5":pr_pe}, bins=100,
+                                         filename=os.path.join(m_d, case+"_summary.pdf"))
     #plt.show()
     obs = pst.observation_data
-    pyemu.plot_utils.ensemble_helper({"b": pt_oe},
-                                     deter_vals=obs.obsval.to_dict(),
-                                     bins=100,
-                                     filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
-    pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
+    if pmc_dir is None:
+        pyemu.plot_utils.ensemble_helper({"b": pt_oe},
+                                         deter_vals=obs.obsval.to_dict(),
+                                         bins=100,
+                                         filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
+        pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
                                        filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"))
+    else:
+        pyemu.plot_utils.ensemble_helper({"b": pt_oe,"0.5":pr_oe},
+                                         deter_vals=obs.obsval.to_dict(),
+                                         bins=100,
+                                         filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
+        pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"0.5":pr_oe,"b": pt_oe},alpha=0.5,
+                                       filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"),
+                                       base_ensemble=os.path.join(pmc_dir,case+"_run.obs+noise.csv"))
     #plt.show()
+
+
 
 if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    setup(volcano)
-    run_glm(volcano)
-    plot_glm_results(volcano)
+    #setup(volcano)
+    run_prior_monte_carlo(volcano,num_reals=1000)
+    run_glm(volcano,num_reals=1000)
+    plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)
 
