@@ -1,0 +1,47 @@
+                    PARAMETER SENSITIVITIES: CASE misti_run
+
+
+NUMERIC PARAMETER SENSITIVITIES FOR OPTIMISATION ITERATION NO. 1   ----->
+  Parameter name   Group        Current Value        PEST_CSS_wo_reg
+   column_height   pargp        25000.0000000        5.16881058563       
+   diffusion_coef  pargp        5000.00000000        4.26259521474       
+   ellipse_major_axis pargp        11000.0000000        0.000111058245890   
+   tgsd_mean       pargp        -1.99000000000       1.10078943836       
+   total_erupted_mass pargp        100000000000.        8.97233759009       
+   wind_direction  pargp        220.000000000        31.2780681801       
+   wind_speed      pargp        5.00000000000        5.03930091772       
+
+
+NUMERIC PARAMETER SENSITIVITIES FOR OPTIMISATION ITERATION NO. 2   ----->
+  Parameter name   Group        Current Value        PEST_CSS_wo_reg
+   column_height   pargp        25198.0338651        11.1894913211       
+   diffusion_coef  pargp        5577.91660184        3.54778629764       
+   ellipse_major_axis pargp        11000.0000000        8.26994759839e-05   
+   tgsd_mean       pargp        -1.98890327039       0.725821308607      
+   total_erupted_mass pargp        80928059649.2        6.99019766418       
+   wind_direction  pargp        218.120223321        21.3183747630       
+   wind_speed      pargp        4.52741395977        3.36205619546       
+
+
+NUMERIC PARAMETER SENSITIVITIES FOR OPTIMISATION ITERATION NO. 3   ----->
+  Parameter name   Group        Current Value        PEST_CSS_wo_reg
+   column_height   pargp        25958.9056771        3.03459615050       
+   diffusion_coef  pargp        5297.10706020        3.51142607887       
+   ellipse_major_axis pargp        11000.0000000        0.000129394869344   
+   tgsd_mean       pargp        -1.99456069577       0.610826754201      
+   total_erupted_mass pargp        79884969488.7        6.80782633614       
+   wind_direction  pargp        217.383142590        19.1469815970       
+   wind_speed      pargp        3.94147953203        3.20570793014       
+
+
+NUMERIC PARAMETER SENSITIVITIES FOR OPTIMISATION ITERATION NO. 4   ----->
+  Parameter name   Group        Current Value        PEST_CSS_wo_reg
+   column_height   pargp        25954.2123106        3.00687700985       
+   diffusion_coef  pargp        5289.58314005        3.49019920309       
+   ellipse_major_axis pargp        11000.0000000        0.000128731962929   
+   tgsd_mean       pargp        -1.99364559421       0.605056343156      
+   total_erupted_mass pargp        79407934982.7        6.76897233489       
+   wind_direction  pargp        217.696289483        19.0460660821       
+   wind_speed      pargp        3.93121013398        3.18889950440       
+
+

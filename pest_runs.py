@@ -1,6 +1,7 @@
 import os
 from time import time
 import shutil
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pyemu
@@ -68,202 +69,13 @@ def write_output_ins_file(output_filename):
     df = pd.DataFrame({"obsnme": obs_names, "obsval": obs_vals}, index=obs_names)
     return ins_filename, df
 
-
-def setup_pulu():
-    # run the model one
-    shutil.copy2(os.path.join("pulu", "org_config_pulu.py"), os.path.join("pulu", "config_pulu.py"))
-    pyemu.os_utils.run("python main.py", cwd="pulu")
-
-    # prepare the interface files
-    output_filename = os.path.join("pulu", "pulu_sim.dat")
-    ins_filename, obs_df = write_output_ins_file(output_filename)
-    config_filename = os.path.join(os.path.join("pulu", "config_pulu.py"))
-    tpl_filename, par_df = write_config_tpl_file(config_filename)
-
-    # create a control file instance
-    pst = pyemu.Pst.from_io_files(tpl_files=tpl_filename, in_files=config_filename, ins_files=ins_filename,
-                                  out_files=output_filename, pst_path=".")
-
-    # set the observation values
-    pst.observation_data.loc[obs_df.obsnme, "obsval"] = obs_df.obsval
-
-    # set the parameter information for the pulu pars
-    par = pst.parameter_data
-    # start by fixing all the parameters in the control file
-    par.loc[:, "partrans"] = "fixed"
-
-    par.loc["total_erupted_mass", "parlbnd"] = 1e9
-    par.loc["total_erupted_mass", "parubnd"] = 1e11
-    par.loc["total_erupted_mass", "parval1"] = 1e10
-    par.loc["total_erupted_mass", "partrans"] = "log"
-
-    par.loc["column_height", "parlbnd"] = 15000
-    par.loc["column_height", "parubnd"] = 25000
-    par.loc["column_height", "parval1"] = 21000
-    par.loc["column_height", "partrans"] = "log"
-
-    par.loc["diffusion_coef", "parlbnd"] = 1000
-    par.loc["diffusion_coef", "parubnd"] = 10000
-    par.loc["diffusion_coef", "parval1"] = 5000
-    par.loc["diffusion_coef", "partrans"] = "log"
-
-    # it looks like mean grainsize is already in log space?
-    par.loc["tgsd_mean", "parlbnd"] = -5
-    par.loc["tgsd_mean", "parubnd"] = +5
-    par.loc["tgsd_mean", "parval1"] = -1.99
-    par.loc["tgsd_mean", "partrans"] = "none"
-    par.loc["tgsd_mean", "parchglim"] = "relative"
-
-    par.loc["ellipse_major_axis", "parlbnd"] = 6000 
-    par.loc["ellipse_major_axis", "parubnd"] = 15000
-    par.loc["ellipse_major_axis", "parval1"] = 11500
-    par.loc["ellipse_major_axis", "partrans"] = "log"
-
-    par.loc["ellipse_minor_axis", "parlbnd"] = 6000
-    par.loc["ellipse_minor_axis", "parubnd"] = 15000
-    par.loc["ellipse_minor_axis", "parval1"] = 11500
-    par.loc["ellipse_minor_axis", "partrans"] = "log"
-
-
-    # par.loc["ellipse_major_axis", "parlbnd"] = 5000
-    # par.loc["ellipse_major_axis", "parubnd"] = 15000
-    # par.loc["ellipse_major_axis", "parval1"] = 8000
-    # par.loc["ellipse_minor_axis", "parval1"] = 5000
-
-    # # tie the minor axis par to the major so they function
-    # # as a single radius
-    # par.loc["ellipse_major_axis", "partrans"] = "none"
-    # #par.loc["ellipse_minor_axis", "partrans"] = "tied"
-    # par.loc["ellipse_minor_axis", "partied"] = "ellipse_major_axis"
-  
-    par.loc["wind_speed", "parlbnd"] = 1
-    par.loc["wind_speed", "parubnd"] = 8
-    par.loc["wind_speed", "parval1"] = 5
-    par.loc["wind_speed", "partrans"] = "log"
-
-    par.loc["wind_direction", "parlbnd"] = 205
-    par.loc["wind_direction", "parubnd"] = 225
-    par.loc["wind_direction", "parval1"] = 217
-    par.loc["wind_direction", "partrans"] = "log"
-
-    # set the observed thickness values
-    pst.try_parse_name_metadata()  # this sets individual columns for northing and easting
-    obs = pst.observation_data
-    # read the observed data
-    df = pd.read_csv(os.path.join("pulu", "pulu_grainsize.csv"))
-    df.columns = df.columns.map(lambda x: x.lower().replace(" ", "_"))
-
-    # for each observation...
-    for oname, oe, on in zip(obs.obsnme, obs.e, obs.n):
-        # find the location based on easting and northing (not the relative, the absolute)
-        v = df.loc[df.apply(lambda x: x.easting == float(oe) and x.northing == float(on), axis=1), "thickness"].values[
-            0]
-        # set the observed value
-        obs.loc[oname, "obsval"] = v
-
-    # set the model forward run command
-    pst.model_command = "python main.py"
-
-    # run pestpp-glm for a single one-off forward run
-    pst.control_data.noptmax = 0
-    pst.write(os.path.join("pulu", "pulu.pst"))
-    pyemu.os_utils.run("pestpp-glm pulu.pst", cwd="pulu")
-
-
-def pulu_run_prior_mc():
-    """run a prior-based monte carlo in parallel locally"""
-    pst = pyemu.Pst(os.path.join("pulu", "pulu.pst"))
-    pst.control_data.noptmax = -1
-    pst.pestpp_options["ies_num_reals"] = 1000
-
-    pst.write(os.path.join("pulu", "pulu_run.pst"))
-    # pyemu.os_utils.run("pestpp-ies pulu_run.pst")
-    pyemu.os_utils.start_workers("pulu", "pestpp-ies", "pulu_run.pst", num_workers=10,
-                                 master_dir="pulu_prior_mc_master")
-
-
-def pulu_run_ies():
-    """run pestpp-ies in parallel locally"""
-    pst = pyemu.Pst(os.path.join("pulu", "pulu.pst"))
-    pst.control_data.noptmax = 5
-    pst.pestpp_options["ies_num_reals"] = 50
-
-    pst.write(os.path.join("pulu", "pulu_run.pst"))
-    # pyemu.os_utils.run("pestpp-ies pulu_run.pst")
-    pyemu.os_utils.start_workers("pulu", "pestpp-ies", "pulu_run.pst", num_workers=10,
-                                 master_dir="pulu_ies_master")
-
-
-def pulu_run_glm():
-    """run pestpp-glm in parallel locally"""
-    pst = pyemu.Pst(os.path.join("pulu", "pulu.pst"))
-    pst.control_data.noptmax = 5
-    pst.pestpp_options["glm_num_reals"] = 500
-
-    pst.write(os.path.join("pulu", "pulu_run.pst"))
-    # pyemu.os_utils.run("pestpp-ies pulu_run.pst")
-    pyemu.os_utils.start_workers("pulu", "pestpp-glm", "pulu_run.pst", num_workers=10,
-                                 master_dir="pulu_glm_master")
-
-
-def pulu_plot_ies_results():
-    """plot the pestpp-ies results"""
-    m_d = "pulu_ies_master"
-    pst = pyemu.Pst(os.path.join(m_d, "pulu_run.pst"))
-    pr_pe = pd.read_csv(os.path.join(m_d, "pulu_run.0.par.csv"), index_col=0)
-    pr_oe = pd.read_csv(os.path.join(m_d, "pulu_run.0.obs.csv"), index_col=0)
-    pt_pe = pd.read_csv(os.path.join(m_d, "pulu_run.{0}.par.csv".
-                                     format(pst.control_data.noptmax)), index_col=0)
-    pt_oe = pd.read_csv(os.path.join(m_d, "pulu_run.{0}.obs.csv".
-                                     format(pst.control_data.noptmax)), index_col=0)
-
-    pr_pe = pr_pe.loc[:, pst.adj_par_names]
-    pt_pe = pt_pe.loc[:, pst.adj_par_names]
-
-    pyemu.plot_utils.ensemble_helper({"0.5": pr_pe, "b": pt_pe}, bins=40,
-                                     filename=os.path.join(m_d, "pulu_ies_par_summary.pdf"))
-    # plt.show()
-    obs = pst.observation_data
-    pyemu.plot_utils.ensemble_helper({"0.5": pr_oe, "b": pt_oe},
-                                     deter_vals=obs.obsval.to_dict(),
-                                     bins=40,
-                                     filename=os.path.join(m_d, "pulu_ies_obs_summary.pdf"))
-    pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"0.5": pr_oe, "b": pt_oe},
-                                       filename=os.path.join(m_d, "pulu_ies_obs_vs_sim.pdf"))
-   # plt.show()
-
-
-def pulu_plot_glm_results():
-    """plot the pestpp-glm results"""
-    m_d = "pulu_glm_master"
-    pst = pyemu.Pst(os.path.join(m_d, "pulu_run.pst"))
-
-    pt_pe = pd.read_csv(os.path.join(m_d, "pulu_run.post.paren.csv"), index_col=0)
-    pt_oe = pd.read_csv(os.path.join(m_d, "pulu_run.post.obsen.csv"), index_col=0)
-
-    pt_pe = pt_pe.loc[:, pst.adj_par_names]
-
-    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=40,
-                                     filename=os.path.join(m_d, "pulu_glm_par_summary.pdf"))
-    # plt.show()
-    obs = pst.observation_data
-    pyemu.plot_utils.ensemble_helper({"b": pt_oe},
-                                     deter_vals=obs.obsval.to_dict(),
-                                     bins=40,
-                                     filename=os.path.join(m_d, "pulu_glm_obs_summary.pdf"))
-    pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
-                                       filename=os.path.join(m_d, "pulu_glm_obs_vs_sim.pdf"))
-    # plt.show()
-
-
-
 def setup(case):
     # run the model one
     shutil.copy2(os.path.join(case, "org_config.py"), os.path.join(case, "config.py"))
     pyemu.os_utils.run("python main.py", cwd=case)
 
     # prepare the interface files
-    output_filename = os.path.join(case, "output_misti.txt")
+    output_filename = os.path.join(case, "output_climax_misti.txt")
     ins_filename, obs_df = write_output_ins_file(output_filename)
     config_filename = os.path.join(os.path.join(case, "config.py"))
     tpl_filename, par_df = write_config_tpl_file(config_filename)
@@ -271,7 +83,7 @@ def setup(case):
     # create a control file instance
     pst = pyemu.Pst.from_io_files(tpl_files=tpl_filename, in_files=config_filename, ins_files=ins_filename,
                                   out_files=output_filename, pst_path=".")
-
+    pst.model_input_data.iloc[0,:].loc["model_file"] = os.path.join("src",os.path.split(config_filename)[-1])
     # set the observation values
     pst.observation_data.loc[obs_df.obsnme, "obsval"] = obs_df.obsval
 
@@ -280,58 +92,47 @@ def setup(case):
     # start by fixing all the parameters in the control file
     par.loc[:, "partrans"] = "fixed"
 
-    par.loc["total_erupted_mass", "parlbnd"] = 1e10
-    par.loc["total_erupted_mass", "parubnd"] = 1e12
-    par.loc["total_erupted_mass", "parval1"] = 8.2e10
+    par.loc["total_erupted_mass", "parlbnd"] = 0.1e11
+    par.loc["total_erupted_mass", "parubnd"] = 2.0e11
+    par.loc["total_erupted_mass", "parval1"] = 1.0e11
     par.loc["total_erupted_mass", "partrans"] = "log"
 
-    par.loc["column_height", "parlbnd"] = 15000
-    par.loc["column_height", "parubnd"] = 29000
-    par.loc["column_height", "parval1"] = 21000
+    par.loc["column_height", "parlbnd"] = 5000
+    par.loc["column_height", "parubnd"] = 45000
+    par.loc["column_height", "parval1"] = 25000
     par.loc["column_height", "partrans"] = "log"
 
-    par.loc["diffusion_coef", "parlbnd"] = 1000
-    par.loc["diffusion_coef", "parubnd"] = 10000
+    par.loc["diffusion_coef", "parlbnd"] = 2000
+    par.loc["diffusion_coef", "parubnd"] = 8000
     par.loc["diffusion_coef", "parval1"] = 5000
     par.loc["diffusion_coef", "partrans"] = "log"
 
     # it looks like mean grainsize is already in log space?
-    par.loc["tgsd_mean", "parlbnd"] = -5
-    par.loc["tgsd_mean", "parubnd"] = +5
+    par.loc["tgsd_mean", "parlbnd"] = -6
+    par.loc["tgsd_mean", "parubnd"] = 6
     par.loc["tgsd_mean", "parval1"] = -1.99
     par.loc["tgsd_mean", "partrans"] = "none"
     par.loc["tgsd_mean", "parchglim"] = "relative"
 
-    par.loc["ellipse_major_axis", "parlbnd"] = 6000 
-    par.loc["ellipse_major_axis", "parubnd"] = 18000
-    par.loc["ellipse_major_axis", "parval1"] = 11500
-    par.loc["ellipse_major_axis", "partrans"] = "log"
+    par.loc["ellipse_major_axis", "parlbnd"] = 1000
+    par.loc["ellipse_major_axis", "parubnd"] = 25000
+    par.loc["ellipse_major_axis", "parval1"] = 11000
+    par.loc["ellipse_minor_axis", "parval1"] = 11000
 
-    par.loc["ellipse_minor_axis", "parlbnd"] = 6000
-    par.loc["ellipse_minor_axis", "parubnd"] = 15000
-    par.loc["ellipse_minor_axis", "parval1"] = 11500
-    par.loc["ellipse_minor_axis", "partrans"] = "log"
-
-
-    # par.loc["ellipse_major_axis", "parlbnd"] = 5000
-    # par.loc["ellipse_major_axis", "parubnd"] = 15000
-    # par.loc["ellipse_major_axis", "parval1"] = 8000
-    # par.loc["ellipse_minor_axis", "parval1"] = 5000
-
-    # # tie the minor axis par to the major so they function
-    # # as a single radius
-    # par.loc["ellipse_major_axis", "partrans"] = "none"
-    # #par.loc["ellipse_minor_axis", "partrans"] = "tied"
-    # par.loc["ellipse_minor_axis", "partied"] = "ellipse_major_axis"
+    # tie the minor axis par to the major so they function
+    # as a single radius
+    par.loc["ellipse_major_axis", "partrans"] = "none"
+    par.loc["ellipse_minor_axis", "partrans"] = "tied"
+    par.loc["ellipse_minor_axis", "partied"] = "ellipse_major_axis"
   
-    par.loc["wind_speed", "parlbnd"] = 1
-    par.loc["wind_speed", "parubnd"] = 8
-    par.loc["wind_speed", "parval1"] = 5
+    par.loc["wind_speed", "parlbnd"] = 0.1
+    par.loc["wind_speed", "parubnd"] = 20.0
+    par.loc["wind_speed", "parval1"] = 5.0
     par.loc["wind_speed", "partrans"] = "log"
 
-    par.loc["wind_direction", "parlbnd"] = 205
-    par.loc["wind_direction", "parubnd"] = 225
-    par.loc["wind_direction", "parval1"] = 217
+    par.loc["wind_direction", "parlbnd"] = 180
+    par.loc["wind_direction", "parubnd"] = 270
+    par.loc["wind_direction", "parval1"] = 220
     par.loc["wind_direction", "partrans"] = "log"
 
     # set the observed thickness values
@@ -366,46 +167,118 @@ def setup(case):
     #plt.show()
 
 
-def run_glm(case,noptmax=50,num_reals=5000):
+def run_glm(case,noptmax=5,num_reals=3000,num_workers=10):
     """run pestpp-glm in parallel locally"""
     pst = pyemu.Pst(os.path.join(case, case+".pst"))
     pst.control_data.noptmax = noptmax
     pst.pestpp_options["glm_num_reals"] = num_reals
 
     pst.write(os.path.join(case, case+"_run.pst"))
-    pyemu.os_utils.start_workers(case, "pestpp-glm", case+"_run.pst", num_workers=10,
+    pyemu.os_utils.start_workers(case, "pestpp-glm", case+"_run.pst", num_workers=num_workers,
                                  master_dir=case+"_glm_master")
 
 
-def plot_glm_results(case):
+def run_prior_monte_carlo(case,num_reals=3000,num_workers=10):
+    pst = pyemu.Pst(os.path.join(case, case+".pst"))
+    pst.control_data.noptmax = -1
+    pst.pestpp_options["ies_num_reals"] = num_reals
+
+    pst.write(os.path.join(case, case+"_run.pst"))
+    pyemu.os_utils.start_workers(case, "pestpp-ies", case+"_run.pst", num_workers=num_workers,
+                                 master_dir=case+"_pmc_master")
+
+def plot_glm_results(case,pmc_dir=None):
     """plot the pestpp-glm results"""
     m_d = case+"_glm_master"
     pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
+    #print(pst.phi)
+    
+    if pmc_dir is not None:
+        pr_oe = pd.read_csv(os.path.join(pmc_dir, case+"_run.0.obs.csv"), index_col=0)
+        pr_oe = pyemu.ObservationEnsemble(pst=pst,df=pr_oe)
+        pr_pe = pd.read_csv(os.path.join(pmc_dir, case+"_run.0.par.csv"), index_col=0)
+        pr_pe = pr_pe.loc[:,pst.adj_par_names]
+
 
     pt_pe = pd.read_csv(os.path.join(m_d, case+"_run.post.paren.csv"), index_col=0)
     pt_oe = pd.read_csv(os.path.join(m_d, case+"_run.post.obsen.csv"), index_col=0)
+    pt_oe = pyemu.ObservationEnsemble(pst=pst,df=pt_oe)
 
+    # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
+    pt_pv = pt_oe.phi_vector
+    best_phi = min(pst.phi,pt_pv.min())
+    acc_phi = best_phi * 2.0
+    pt_pv = pt_pv.loc[pt_pv<acc_phi]
+    pt_pe = pt_pe.loc[pt_pv.index,:]
+    pt_oe = pt_oe.loc[pt_pv.index,:]
+    print("glm phi:",pst.phi, "best phi:",best_phi,"passing realizations:",pt_oe.shape[0])
+    fig,ax = plt.subplots(1,1,figsize=(4,4))
+    if pmc_dir is not None:
+        ax.hist(pr_oe.phi_vector.apply(np.log10),bins=20,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
+    ax.hist(pt_oe.phi_vector.apply(np.log10),bins=20,facecolor="b",alpha=0.5,edgecolor="none",density=False)
+    ax.plot([pst.phi,pst.phi],ax.get_ylim(),"b--")
+    ax.set_title("best phi:{0:5.2E}, acceptable phi:{1:5.2E}, number of realizations passing: {2}".format(best_phi,acc_phi,pt_oe.shape[0]))
+    ax.set_xlabel("$log_{10} \phi$")
+    plt.savefig(os.path.join(m_d,"phi_hist.pdf"))
+    plt.close(fig)
+  
     pt_pe = pt_pe.loc[:, pst.adj_par_names]
 
-    pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=100,
-                                     filename=os.path.join(m_d, case+"_summary.pdf"))
+    if pmc_dir is None:
+        pyemu.plot_utils.ensemble_helper({"b": pt_pe}, bins=100,
+                                         filename=os.path.join(m_d, case+"_summary.pdf"))
+    else:
+        pyemu.plot_utils.ensemble_helper({"b": pt_pe,"0.5":pr_pe}, bins=100,
+                                         filename=os.path.join(m_d, case+"_summary.pdf"))
     #plt.show()
     obs = pst.observation_data
-    pyemu.plot_utils.ensemble_helper({"b": pt_oe},
-                                     deter_vals=obs.obsval.to_dict(),
-                                     bins=100,
-                                     filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
-    pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
+    if pmc_dir is None:
+        pyemu.plot_utils.ensemble_helper({"b": pt_oe},
+                                         deter_vals=obs.obsval.to_dict(),
+                                         bins=100,
+                                         filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"))
+        pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"b": pt_oe},
                                        filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"))
+    else:
+        pyemu.plot_utils.ensemble_helper({"b": pt_oe,"0.5":pr_oe},
+                                         deter_vals=obs.obsval.to_dict(),
+                                         bins=100,
+                                         filename=os.path.join(m_d, case+"_glm_obs_summary.pdf"),
+                                         std_window=0.5,deter_range=True,sync_bins=False)
+        pyemu.plot_utils.ensemble_res_1to1(pst=pst, ensemble={"0.5":pr_oe,"b": pt_oe},alpha=0.5,
+                                       filename=os.path.join(m_d, case+"_glm_obs_vs_sim.pdf"),
+                                       base_ensemble=os.path.join(pmc_dir,case+"_run.obs+noise.csv"))
+        pst.parameter_data.loc[:,"pargp"] = pst.par_names
+        pyemu.plot_utils.ensemble_change_summary(pst=pst, ensemble1=pr_pe,ensemble2=pt_pe,
+                                       filename=os.path.join(m_d, case+"_glm_par_change_summary.pdf"))
     #plt.show()
+
+
+def sensitivity_experiment():
+    case = "misti"
+    pst = pyemu.Pst(os.path.join(case, case + ".pst"))
+    pst.control_data.noptmax = 0
+    pst.write(os.path.join(case, case + ".pst"))
+    pyemu.os_utils.run("pestpp-glm {0}.pst".format(case),cwd=case)
+    pst = pyemu.Pst(os.path.join(case, case + ".pst"))
+    base_phi = pst.phi
+    pst.parameter_data.loc["wind_speed","parval1"] *= 100
+    pst.write(os.path.join(case, case + ".pst"))
+    pyemu.os_utils.run("pestpp-glm {0}.pst".format(case), cwd=case)
+    pst = pyemu.Pst(os.path.join(case, case + ".pst"))
+    pert_phi = pst.phi
+    print("base phi:",base_phi,"perturbed phi:", pert_phi)
+
 
 if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
     setup(volcano)
-    run_glm(volcano)
-    plot_glm_results(volcano)
+    #sensitivity_experiment()
+    run_prior_monte_carlo(volcano,num_reals=10000,num_workers=15)
+    run_glm(volcano,num_reals=10000,num_workers=15)
+    plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     end=time()
     print("total execution=",end-start)
 
