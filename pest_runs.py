@@ -284,22 +284,23 @@ def plot_glue_results(case):
     #print(pst.phi)
        
     pr_oe = pd.read_csv(os.path.join(m_d, case+"_run.0.obs.csv"), index_col=0)
-    pr_oe = pyemu.ObservationEnsemble(pst=pst,df=pr_oe)
+
     pr_pe = pd.read_csv(os.path.join(m_d, case+"_run.0.par.csv"), index_col=0)
+    pr_pe.index = pr_pe.index.map(str)
+    pr_oe.index = pr_oe.index.map(str)
+    pr_pe = pr_pe.loc[pr_oe.index,:]
+    pr_oe = pyemu.ObservationEnsemble(pst=pst, df=pr_oe)
     pr_pe = pr_pe.loc[:,pst.adj_par_names]
+
+    print(pr_oe.shape,pr_pe.shape)
 
   # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
     pr_pv = pr_oe.phi_vector
     best_phi = min(pst.phi,pr_pv.min())
-    acc_phi = best_phi * 10
+    acc_phi = best_phi * 1.25
     pt_pv = pr_pv.loc[pr_pv<acc_phi]
-    try:
-        pt_pe = pr_pe.loc[pt_pv.index,:]
-    except Exception as error:
-        print(pt_pv.index)
-        print(error)
-      
     pt_oe = pr_oe.loc[pt_pv.index,:]
+    pt_pe = pr_pe.loc[pt_oe.index,:]
     print("best phi:",best_phi,"passing realizations:",pt_oe.shape[0])
     fig,ax = plt.subplots(1,1,figsize=(4,4))
     
@@ -311,7 +312,6 @@ def plot_glue_results(case):
     plt.savefig(os.path.join(m_d,"phi_hist.pdf"))
     plt.close(fig)
   
-    pt_pe = pt_pe.loc[:, pst.adj_par_names]
 
     pyemu.plot_utils.ensemble_helper({"b": pt_pe,"0.5":pr_pe}, bins=100,
                                      filename=os.path.join(m_d, case+"_summary.pdf"))
