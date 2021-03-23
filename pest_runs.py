@@ -282,26 +282,29 @@ def plot_glue_results(case):
     m_d = case+"_pmc_master"
     pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
     #print(pst.phi)
-    
-    
+       
     pr_oe = pd.read_csv(os.path.join(m_d, case+"_run.0.obs.csv"), index_col=0)
     pr_oe = pyemu.ObservationEnsemble(pst=pst,df=pr_oe)
     pr_pe = pd.read_csv(os.path.join(m_d, case+"_run.0.par.csv"), index_col=0)
     pr_pe = pr_pe.loc[:,pst.adj_par_names]
 
-
-    # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
+  # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
     pr_pv = pr_oe.phi_vector
     best_phi = min(pst.phi,pr_pv.min())
-    acc_phi = best_phi * 2.0
+    acc_phi = best_phi * 10
     pt_pv = pr_pv.loc[pr_pv<acc_phi]
-    pt_pe = pr_pe.loc[pt_pv.index,:]
+    try:
+        pt_pe = pr_pe.loc[pt_pv.index,:]
+    except Exception as error:
+        print(pt_pv.index)
+        print(error)
+      
     pt_oe = pr_oe.loc[pt_pv.index,:]
     print("best phi:",best_phi,"passing realizations:",pt_oe.shape[0])
     fig,ax = plt.subplots(1,1,figsize=(4,4))
     
-    ax.hist(pr_oe.phi_vector.apply(np.log10),bins=20,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
-    ax.hist(pt_oe.phi_vector.apply(np.log10),bins=20,facecolor="b",alpha=0.5,edgecolor="none",density=False)
+    ax.hist(pr_oe.phi_vector.apply(np.log10),bins=100,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
+    ax.hist(pt_oe.phi_vector.apply(np.log10),bins=100,facecolor="b",alpha=0.5,edgecolor="none",density=False)
     ax.plot([pst.phi,pst.phi],ax.get_ylim(),"b--")
     ax.set_title("best phi:{0:5.2E}, acceptable phi:{1:5.2E}, number of realizations passing: {2}".format(best_phi,acc_phi,pt_oe.shape[0]))
     ax.set_xlabel("$log_{10} \phi$")
@@ -312,7 +315,7 @@ def plot_glue_results(case):
 
     pyemu.plot_utils.ensemble_helper({"b": pt_pe,"0.5":pr_pe}, bins=100,
                                      filename=os.path.join(m_d, case+"_summary.pdf"))
-    #plt.show()
+    plt.show()
     obs = pst.observation_data
     
     pyemu.plot_utils.ensemble_helper({"b": pt_oe,"0.5":pr_oe},
@@ -335,8 +338,8 @@ if __name__ == "__main__":
     start=time()
     #setup(volcano)
     #sensitivity_experiment()
-    #run_prior_monte_carlo(volcano,num_reals=10000,num_workers=15)
-    #run_glm(volcano,num_reals=10000,num_workers=15)
+    #run_prior_monte_carlo(volcano,num_reals=100000,num_workers=10)
+    #run_glm(volcano,num_reals=100,num_workers=15)
     #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     plot_glue_results(volcano)
     end=time()

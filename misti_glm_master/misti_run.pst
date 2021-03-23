@@ -63,4 +63,4 @@ python main.py
 * model input/output
 ./config.py.tpl src/config.py
 ./output_climax_misti.txt.ins ./output_climax_misti.txt
-++glm_num_reals(10000)
+++glm_num_reals(100)

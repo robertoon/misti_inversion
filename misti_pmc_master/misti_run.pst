@@ -15,15 +15,15 @@ pcf
 * parameter groups
  pargp                   relative              1.0000000000E-02       0.0  switch                2.0000000000E+00       parabolic              1.0000000000E-05       5.0000000000E-01       smaller              
 * parameter data
- column_height          log                    factor                2.5000000000E+04      5.0000000000E+03      4.5000000000E+04       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- diffusion_coef         log                    factor                5.0000000000E+03      2.0000000000E+03      8.0000000000E+03       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ column_height          none                   factor                2.5000000000E+04      5.0000000000E+03      4.5000000000E+04       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ diffusion_coef         none                   factor                5.0000000000E+03      2.0000000000E+03      8.0000000000E+03       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  ellipse_major_axis     none                   factor                1.1000000000E+04      1.0000000000E+03      2.5000000000E+04       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  ellipse_minor_axis     tied                   factor                1.1000000000E+04      1.1000000000E-10      1.1000000000E+10       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  tgsd_mean              none                   relative              -1.9900000000E+00     -6.0000000000E+00     6.0000000000E+00       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  tgsd_sigma             fixed                  factor                1.0000000000E+00      1.1000000000E-10      1.1000000000E+10       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- total_erupted_mass     log                    factor                1.0000000000E+11      1.0000000000E+10      2.0000000000E+11       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- wind_direction         log                    factor                2.2000000000E+02      1.8000000000E+02      2.7000000000E+02       pargp                 1.0000000000E+00      0.0000000000E+00       1          
- wind_speed             log                    factor                5.0000000000E+00      1.0000000000E-01      2.0000000000E+01       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ total_erupted_mass     none                   factor                1.0000000000E+11      1.0000000000E+10      2.0000000000E+11       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ wind_direction         none                   factor                2.2000000000E+02      1.8000000000E+02      2.7000000000E+02       pargp                 1.0000000000E+00      0.0000000000E+00       1          
+ wind_speed             none                   factor                5.0000000000E+00      1.0000000000E-01      2.0000000000E+01       pargp                 1.0000000000E+00      0.0000000000E+00       1          
  ellipse_minor_axis     ellipse_major_axis   
 * observation groups
 obgnme               
@@ -63,4 +63,5 @@ python main.py
 * model input/output
 ./config.py.tpl src/config.py
 ./output_climax_misti.txt.ins ./output_climax_misti.txt
-++ies_num_reals(10000)
+++ies_par_en(misti_prior.csv)
+++ies_num_reals(100000)
