@@ -142,7 +142,7 @@ ies_subset_size: 4
 ies_reg_factor: 0
 ies_verbose_level: 0
 ies_use_prior_scaling: 0
-ies_num_reals: 50
+ies_num_reals: 500
 ies_bad_phi: 1e+300
 ies_bad_phi_sigma: 1e+300
 ies_include_base: 1
@@ -290,7 +290,7 @@ PEST SVD Information
 ...using reg_factor:  0
 ...loading par ensemble from csv file misti_prior.csv
 ...not using prior parameter covariance matrix scaling
-...drawing observation noise realizations:  50
+...drawing observation noise realizations:  500
 ...adding 'base' parameter values to ensemble
 ...adding 'base' observation values to ensemble
 checking for denormal values in pe
@@ -300,13 +300,15 @@ checking for denormal values in base oe
 ...centering on ensemble mean vector
 ...using subset in lambda testing, number of realizations used in subset testing:  4
 ...subset how:  RANDOM
-...running initial ensemble of size 50
+...running initial ensemble of size 500
+...failed realizations:  2
+...the following par:obs realization runs failed: 405:405,432:432,
 ...saved initial obs ensemble to misti_run.0.obs.csv
 
   ---  pre-drop initial phi summary  ---  
        phi type           mean            std            min            max
-       measured          16745        27528.3        4134.42         152877
-         actual        16636.4        27281.4        4032.58         150986
+       measured        19037.8        59718.3        1426.89    1.04484e+06
+         actual        19018.4        59813.8        1342.05    1.04662e+06
      note: 'measured' phi reported above includes 
            realizations of measurement noise, 
            'actual' phi does not.
@@ -316,8 +318,8 @@ checking for denormal values in base oe
 
   ---  initial phi summary  ---  
        phi type           mean            std            min            max
-       measured          16745        27528.3        4134.42         152877
-         actual        16636.4        27281.4        4032.58         150986
+       measured        19037.8        59718.3        1426.89    1.04484e+06
+         actual        19018.4        59813.8        1342.05    1.04662e+06
      note: 'measured' phi reported above includes 
            realizations of measurement noise, 
            'actual' phi does not.

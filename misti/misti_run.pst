@@ -64,4 +64,4 @@ python main.py
 ./config.py.tpl src/config.py
 ./output_climax_misti.txt.ins ./output_climax_misti.txt
 ++ies_par_en(misti_prior.csv)
-++ies_num_reals(50)
+++ies_num_reals(500)

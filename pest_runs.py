@@ -299,7 +299,7 @@ def plot_glue_results(case):
   # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
     pr_pv = pr_oe.phi_vector
     best_phi = min(pst.phi,pr_pv.min())
-    acc_phi = best_phi * 1.1
+    acc_phi = best_phi * 2
     pt_pv = pr_pv.loc[pr_pv<acc_phi]
     pt_oe = pr_oe.loc[pt_pv.index,:]
     pt_pe = pr_pe.loc[pt_oe.index,:]
@@ -343,7 +343,7 @@ if __name__ == "__main__":
     start=time()
     #setup(volcano)
     #sensitivity_experiment()
-    #run_prior_monte_carlo(volcano,num_reals=50,num_workers=10)
+    #run_prior_monte_carlo(volcano,num_reals=500,num_workers=10)
     #run_glm(volcano,num_reals=100,num_workers=15)
     #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     plot_glue_results(volcano)
