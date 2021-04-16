@@ -93,45 +93,46 @@ def setup(case):
     par.loc[:, "partrans"] = "fixed"
 
     par.loc["total_erupted_mass", "parlbnd"] = 0.1e11
-    par.loc["total_erupted_mass", "parubnd"] = 2.0e11
+    par.loc["total_erupted_mass", "parubnd"] = 5.0e11
     par.loc["total_erupted_mass", "parval1"] = 1.0e11
     par.loc["total_erupted_mass", "partrans"] = "log"
 
-    par.loc["column_height", "parlbnd"] = 5000
-    par.loc["column_height", "parubnd"] = 45000
+    par.loc["column_height", "parlbnd"] = 10000
+    par.loc["column_height", "parubnd"] = 30000
     par.loc["column_height", "parval1"] = 25000
     par.loc["column_height", "partrans"] = "log"
 
-    par.loc["diffusion_coef", "parlbnd"] = 2000
-    par.loc["diffusion_coef", "parubnd"] = 8000
-    par.loc["diffusion_coef", "parval1"] = 5000
+    par.loc["diffusion_coef", "parlbnd"] = 300
+    par.loc["diffusion_coef", "parubnd"] = 3000
+    par.loc["diffusion_coef", "parval1"] = 1500
     par.loc["diffusion_coef", "partrans"] = "log"
 
     # it looks like mean grainsize is already in log space?
-    par.loc["tgsd_mean", "parlbnd"] = -6
-    par.loc["tgsd_mean", "parubnd"] = 6
+    par.loc["tgsd_mean", "parlbnd"] = -2
+    par.loc["tgsd_mean", "parubnd"] = 2
     par.loc["tgsd_mean", "parval1"] = -1.99
     par.loc["tgsd_mean", "partrans"] = "none"
     par.loc["tgsd_mean", "parchglim"] = "relative"
 
-    par.loc["ellipse_major_axis", "parlbnd"] = 1000
+    par.loc["ellipse_major_axis", "parlbnd"] = 5000
     par.loc["ellipse_major_axis", "parubnd"] = 25000
     par.loc["ellipse_major_axis", "parval1"] = 11000
     par.loc["ellipse_minor_axis", "parval1"] = 11000
 
+ 
     # tie the minor axis par to the major so they function
     # as a single radius
     par.loc["ellipse_major_axis", "partrans"] = "none"
     par.loc["ellipse_minor_axis", "partrans"] = "tied"
     par.loc["ellipse_minor_axis", "partied"] = "ellipse_major_axis"
   
-    par.loc["wind_speed", "parlbnd"] = 0.1
+    par.loc["wind_speed", "parlbnd"] = 0.5
     par.loc["wind_speed", "parubnd"] = 20.0
     par.loc["wind_speed", "parval1"] = 5.0
     par.loc["wind_speed", "partrans"] = "log"
 
-    par.loc["wind_direction", "parlbnd"] = 180
-    par.loc["wind_direction", "parubnd"] = 270
+    par.loc["wind_direction", "parlbnd"] = 160
+    par.loc["wind_direction", "parubnd"] = 260
     par.loc["wind_direction", "parval1"] = 220
     par.loc["wind_direction", "partrans"] = "log"
 
@@ -197,6 +198,7 @@ def run_prior_monte_carlo(case,num_reals=3000,num_workers=10,use_uniform=True):
 def plot_glm_results(case,pmc_dir=None):
     """plot the pestpp-glm results"""
     m_d = case+"_glm_master"
+    #print('Done')
     pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
     #print(pst.phi)
     
@@ -214,7 +216,7 @@ def plot_glm_results(case,pmc_dir=None):
     # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
     pt_pv = pt_oe.phi_vector
     best_phi = min(pst.phi,pt_pv.min())
-    acc_phi = best_phi * 2.0
+    acc_phi = best_phi * 1.1
     pt_pv = pt_pv.loc[pt_pv<acc_phi]
     pt_pe = pt_pe.loc[pt_pv.index,:]
     pt_oe = pt_oe.loc[pt_pv.index,:]
@@ -297,11 +299,14 @@ def plot_glue_results(case):
   # rejection sampling - only keep posterior realizations that are within XXX% of the best phi
     pr_pv = pr_oe.phi_vector
     best_phi = min(pst.phi,pr_pv.min())
-    acc_phi = best_phi * 1.25
+    acc_phi = best_phi * 1.1
     pt_pv = pr_pv.loc[pr_pv<acc_phi]
     pt_oe = pr_oe.loc[pt_pv.index,:]
     pt_pe = pr_pe.loc[pt_oe.index,:]
     print("best phi:",best_phi,"passing realizations:",pt_oe.shape[0])
+    pt_pe.to_csv("filtered_posterior.csv")
+    pr_pe.to_csv("prior.csv")
+
     fig,ax = plt.subplots(1,1,figsize=(4,4))
     
     ax.hist(pr_oe.phi_vector.apply(np.log10),bins=100,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
@@ -338,7 +343,7 @@ if __name__ == "__main__":
     start=time()
     #setup(volcano)
     #sensitivity_experiment()
-    #run_prior_monte_carlo(volcano,num_reals=100000,num_workers=10)
+    #run_prior_monte_carlo(volcano,num_reals=50,num_workers=10)
     #run_glm(volcano,num_reals=100,num_workers=15)
     #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     plot_glue_results(volcano)

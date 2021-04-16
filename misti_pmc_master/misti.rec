@@ -1,0 +1,350 @@
+             pestpp-glm 5.0.7
+
+    by The PEST++ Development Team
+
+
+
+version: 5.0.7
+binary compiled on Nov 11 2020 at 17:07:37
+
+using control file: "misti.pst"
+
+in directory: "/Users/robertconstantinescu/Documents/Coduri Python/misti_inversion/misti"
+on host: "U232946.cas.usf.edu"
+
+
+Note 'NOPTMAX' == 0, switching to forgiveness mode when checking inputs
+
+Note: 3 unused lines in pest control file:
+  -->  line number 6: '2.000000E+01  -3.000000E+00   3.000000E-01   1.000000E-02        -7       999          lamforgive        noderforgive' 
+  -->  line number 10: '0         0         0         0             jcosave          verboserec          jcosaveitn          reisaveitn          parsaveitn        noparsaverun' 
+  -->  line number 12: '1' 
+noptmax = 0, resetting max_run_fail = 1
+
+    This software has been approved for release by the
+    U.S.Geological Survey(USGS).Although the software has 
+    been subjected to rigorous review, the USGS reserves the
+    right to update the software as needed pursuant to further
+    analysisand review.No warranty, expressed or implied, is 
+    made by the USGS or the U.S.Government as to the
+    functionality of the softwareand related material nor shall
+    the fact of release constitute any such warranty.
+    Furthermore, the software is released on condition that
+    neither the USGS nor the U.S.Government shall be held
+    liable for any damages resulting from its authorized 
+    or unauthorized use.
+
+
+pestmode:- 
+   estimation
+
+
+Case dimensions:- 
+    Number of parameters = 9
+    Number of adjustable parameters = 7
+    Number of observations = 30
+    Number of prior estimates = 0
+
+PEST Control Information
+    relparmax = 10
+    facparmax = 10
+    facorig = 0.001
+    phiredswh = 0.1
+    noptmax = 0
+    phiredstp = 0.01
+    nphistp = 3
+    nphinored = 3
+    relparstp = 0.01
+    nrelpar = 3
+
+
+    PEST++ OPTIONS: 
+
+...general options (used in multiple tools): 
+svd_pack: redsvd
+lambda_scale_fac: 0.75,1,1.1,
+forgive_unknown_args: 0
+max_run_fail: 1
+yamr_poll_interval: 1
+parameter_covariance: 
+observation_covariance: 
+hotstart_resfile: 
+overdue_resched_fac: 1.15
+overdue_giveup_fac: 100
+overdue_giveup_minutes: 1e+30
+condor_submit_file: 
+tie_by_group: 0
+par_sigma_range: 4
+enforce_tied_bounds: 0
+debug_parse_only: 0
+check_tplins: 1
+fill_tpl_zeros: 0
+additional_ins_delimiters: 
+random_seed: 358183147
+num_tpl_ins_threads: 1
+panther_agent_restart_on_error: 0
+panther_agent_no_ping_timeout_secs: -1
+panther_debug_loop: 0
+panther_echo: 1
+
+
+...pestpp-glm specific options:
+max_n_super: 1000000
+super_eigthresh: 1e-06
+n_iter_base: 1000000
+n_iter_super: 0
+super_relparmax: 0.1
+max_super_frz_iter: 20
+max_reg_iter: 20
+lambdas: 0.1,1,10,100,1000,
+iteration_summary: 1
+der_forgive: 1
+uncertainty: 1
+forecasts: 
+base_jacobian: 
+glm_num_reals: 0
+jac_scale: 1
+glm_normal_form: DIAG
+glm_debug_der_fail: 0
+glm_debug_lamb_fail: 0
+glm_debug_real_fail: 0
+glm_accept_mc_phi: 0
+glm_rebase_super: 0glm_iter_mc: 0
+...pestpp-swp options:
+sweep_parameter_csv_file: 
+sweep_output_csv_file: sweep_out.csv
+sweep_chunk: 500
+sweep_forgive: 0
+sweep_base_run: 0
+
+...pestpp-opt options:
+opt_objective_function: 
+opt_coin_log: 1
+opt_skip_final: 0
+opt_std_weights: 0
+opt_stack_size: 0
+opt_par_stack: 
+opt_obs_stack: 
+opt_decision_variable_groups: 
+opt_external_variable_groups: 
+opt_constraint_groups: 
+opt_risk: 0.5
+opt_iter_derinc_fac: 1
+opt_direction: 1
+opt_iter_tol: 0.001
+opt_recalc_fosm_every: 1
+opt_include_bnd_pi: 1
+
+...pestpp-ies options:
+ies_parameter_ensemble: 
+ies_observation_ensemble: 
+ies_restart_parameter_ensemble: 
+ies_restart_observation_ensemble: 
+ies_use_approximate_solution: 1
+ies_lambda_mults: 0.1,1,10,
+ies_initial_lambda: -999
+ies_use_approx: 1
+ies_subset_size: 4
+ies_reg_factor: 0
+ies_verbose_level: 0
+ies_use_prior_scaling: 0
+ies_num_reals: 50
+ies_bad_phi: 1e+300
+ies_bad_phi_sigma: 1e+300
+ies_include_base: 1
+ies_use_empirical_prior: 0
+ies_group_draws: 0
+ies_enforce_bounds: 1
+ies_save_binary: 0
+ies_localizer: 
+ies_accept_phi_fac: 1.05
+ies_lambda_inc_fac: 10
+ies_lambda_dec_fac: 0.75
+ies_save_lambda_ensembles: 0
+ies_subset_how: RANDOM
+ies_localize_how: PARAMETERS
+ies_num_threads: -1
+ies_debug_fail_subset: 0
+ies_debug_fail_remainder: 0
+ies_debug_bad_phi: 0
+ies_debug_upgrade_only: 0
+ies_debug_high_subset_phi: 0
+ies_debug_high_upgrade_phi: 0
+ies_csv_by_reals: 1
+ies_autoadaloc: 0
+ies_autoadaloc_sigma_dist: 1
+ies_enforce_chglim: 0
+ies_center_on: 
+ies_no_noise: 0
+ies_drop_conflicts: 0
+ies_save_rescov:0
+ies_pdc_sigma_distance: -1
+
+pestpp-sen options: 
+gsa_method: MORRIS
+gsa_morris_pooled_obs: 0
+gsa_morris_obs_sen: 1
+gsa_morris_p: 4
+gsa_morris_r: 4
+gsa_morris_delta: 0.6666
+gsa_sobol_samples: 4
+gsa_sobol_par_dist: norm
+panther_agent_freeze_on_fail: 0
+
+
+
+Model command line(s):- 
+    python main.py
+
+Model interface files:-
+    template files:
+      ./config.py.tpl
+    model input files:
+      src/config.py
+
+    instruction files:
+      ./output_climax_misti.txt.ins
+    model output files:
+      ./output_climax_misti.txt
+
+
+Parameter group information
+NAME            INCREMENT TYPE     DERIVATIVE INCREMENT    INCREMENT LOWER BOUND  FORCE CENTRAL     INCREMENT MULTIPLIER
+pargp                 RELATIVE                     0.01                        0         SWITCH                        2
+
+
+
+Parameter information
+NAME               TRANSFORMATION        CHANGE LIMIT  INITIAL VALUE    LOWER BOUND    UPPER BOUND          GROUP          SCALE         OFFSET  DERIVATIVE COMMAND
+column_height      log                     FACTOR          25000          10000          30000          pargp              1              0                   1
+diffusion_coef     log                     FACTOR           1500            300           3000          pargp              1              0                   1
+ellipse_major_axis none                    FACTOR          11000           5000          25000          pargp              1              0                   1
+ellipse_minor_axis tied                    FACTOR          11000        1.1e-10        1.1e+10          pargp              1              0                   1
+tgsd_mean          none                  RELATIVE          -1.99             -2              2          pargp              1              0                   1
+tgsd_sigma         fixed                   FACTOR              1        1.1e-10        1.1e+10          pargp              1              0                   1
+total_erupted_mass log                     FACTOR          1e+11          1e+10          5e+11          pargp              1              0                   1
+wind_direction     log                     FACTOR            220            160            260          pargp              1              0                   1
+wind_speed         log                     FACTOR              5            0.5             20          pargp              1              0                   1
+
+
+
+Observation information
+NAME                                                         VALUE               GROUP              WEIGHT
+obs_e:221457.0_n:8184523.0_x:221457_y:8184523                    7              obgnme                   1
+obs_e:223413.0_n:8178296.0_x:223413_y:8178296                    6              obgnme                   1
+obs_e:228433.0_n:8192778.0_x:228433_y:8192778                    7              obgnme                   1
+obs_e:229788.0_n:8193427.0_x:229788_y:8193427                    5              obgnme                   1
+obs_e:231595.0_n:8198480.0_x:231595_y:8198480                    4              obgnme                   1
+obs_e:231694.0_n:8197619.0_x:231694_y:8197619                    4              obgnme                   1
+obs_e:233194.0_n:8190440.0_x:233194_y:8190440                   10              obgnme                   1
+obs_e:233837.0_n:8195775.0_x:233837_y:8195775                   10              obgnme                   1
+obs_e:233908.0_n:8189011.0_x:233908_y:8189011                   16              obgnme                   1
+obs_e:234195.0_n:8198194.0_x:234195_y:8198194                    4              obgnme                   1
+obs_e:235327.0_n:8184950.0_x:235327_y:8184950                   20              obgnme                   1
+obs_e:235614.0_n:8190354.0_x:235614_y:8190354                   14              obgnme                   1
+obs_e:235682.0_n:8187652.0_x:235682_y:8187652                   25              obgnme                   1
+obs_e:236163.0_n:8190958.0_x:236163_y:8190958                   28              obgnme                   1
+obs_e:236538.0_n:8191417.0_x:236538_y:8191417                   20              obgnme                   1
+obs_e:236616.0_n:8177416.0_x:236616_y:8177416                    8              obgnme                   1
+obs_e:236686.0_n:8192411.0_x:236686_y:8192411                   28              obgnme                   1
+obs_e:237006.0_n:8202926.0_x:237006_y:8202926                    8              obgnme                   1
+obs_e:237454.0_n:8185525.0_x:237454_y:8185525                   20              obgnme                   1
+obs_e:237496.0_n:8190167.0_x:237496_y:8190167                   30              obgnme                   1
+obs_e:238665.0_n:8188244.0_x:238665_y:8188244                   22              obgnme                   1
+obs_e:238954.0_n:8189678.0_x:238954_y:8189678                   29              obgnme                   1
+obs_e:239587.0_n:8185586.0_x:239587_y:8185586                    9              obgnme                   1
+obs_e:239760.0_n:8190677.0_x:239760_y:8190677                   34              obgnme                   1
+obs_e:240931.0_n:8186974.0_x:240931_y:8186974                    9              obgnme                   1
+obs_e:241878.0_n:8190407.0_x:241878_y:8190407                   14              obgnme                   1
+obs_e:244750.0_n:8189532.0_x:244750_y:8189532                   25              obgnme                   1
+obs_e:244814.0_n:8189459.0_x:244814_y:8189459                    6              obgnme                   1
+obs_e:245486.0_n:8201343.0_x:245486_y:8201343                    4              obgnme                   1
+obs_e:247863.0_n:8185501.0_x:247863_y:8185501                    6              obgnme                   1
+
+
+
+Prior information
+
+   no prior information provided
+
+
+
+PEST SVD Information
+    maxsing = 10000000
+    eigthresh = 1e-06
+
+
+
+
+
+...loading prior parameter covariance matrix
+
+   -----    Starting pestpp-glm Iterations    ----    
+
+-----------------------------------------
+     ---   OPTIMIZATION COMPLETE   ---   
+  Reason for terminating PEST++ simulation: NOPTMAX criterion met
+  Summary of termination criteria:
+  NOPTMAX = 0 ;  NOPT at termination = 0
+  NPHINORED = 3 ;  NPHINORED at termination = 0
+  NRELPAR = 3; RELPARSTP = 0.01 ;  NRELPAR at termination = 0
+  PHIREDSTP = 0.01; NPHISTP = 3
+  NPHISTP lowest PHI's:
+
+FINAL OPTIMISATION RESULTS
+
+  Optimal parameter values  
+
+     Parameter            
+        Name         Value
+    ------------  ------------
+    column_height         25000
+    diffusion_coef          1500
+    ellipse_major_axis         11000
+    ellipse_minor_axis         11000
+    tgsd_mean            -1.99
+    tgsd_sigma               1
+    total_erupted_mass         1e+11
+    wind_direction           220
+    wind_speed               5
+
+
+  Observations with optimal model-simulated equivalents and residuals
+                 Name        Group             Measured             Modelled             Residual               Weight
+ obs_e:221457.0_n:8184523.0_x:221457_y:8184523       obgnme              7.00000             0.371158              6.62884              1.00000
+ obs_e:223413.0_n:8178296.0_x:223413_y:8178296       obgnme              6.00000              1.01012              4.98988              1.00000
+ obs_e:228433.0_n:8192778.0_x:228433_y:8192778       obgnme              7.00000              2.89978              4.10022              1.00000
+ obs_e:229788.0_n:8193427.0_x:229788_y:8193427       obgnme              5.00000              4.82164             0.178363              1.00000
+ obs_e:231595.0_n:8198480.0_x:231595_y:8198480       obgnme              4.00000             0.501232              3.49877              1.00000
+ obs_e:231694.0_n:8197619.0_x:231694_y:8197619       obgnme              4.00000              1.14870              2.85130              1.00000
+ obs_e:233194.0_n:8190440.0_x:233194_y:8190440       obgnme              10.0000              35.0777             -25.0777              1.00000
+ obs_e:233837.0_n:8195775.0_x:233837_y:8195775       obgnme              10.0000              10.7196            -0.719580              1.00000
+ obs_e:233908.0_n:8189011.0_x:233908_y:8189011       obgnme              16.0000              42.1177             -26.1177              1.00000
+ obs_e:234195.0_n:8198194.0_x:234195_y:8198194       obgnme              4.00000              2.57701              1.42299              1.00000
+ obs_e:235327.0_n:8184950.0_x:235327_y:8184950       obgnme              20.0000              33.1407             -13.1407              1.00000
+ obs_e:235614.0_n:8190354.0_x:235614_y:8190354       obgnme              14.0000              49.2651             -35.2651              1.00000
+ obs_e:235682.0_n:8187652.0_x:235682_y:8187652       obgnme              25.0000              47.7125             -22.7125              1.00000
+ obs_e:236163.0_n:8190958.0_x:236163_y:8190958       obgnme              28.0000              49.0854             -21.0854              1.00000
+ obs_e:236538.0_n:8191417.0_x:236538_y:8191417       obgnme              20.0000              48.0240             -28.0240              1.00000
+ obs_e:236616.0_n:8177416.0_x:236616_y:8177416       obgnme              8.00000              2.09111              5.90889              1.00000
+ obs_e:236686.0_n:8192411.0_x:236686_y:8192411       obgnme              28.0000              43.5179             -15.5179              1.00000
+ obs_e:237006.0_n:8202926.0_x:237006_y:8202926       obgnme              8.00000            0.0207870              7.97921              1.00000
+ obs_e:237454.0_n:8185525.0_x:237454_y:8185525       obgnme              20.0000              36.5777             -16.5777              1.00000
+ obs_e:237496.0_n:8190167.0_x:237496_y:8190167       obgnme              30.0000              51.4810             -21.4810              1.00000
+ obs_e:238665.0_n:8188244.0_x:238665_y:8188244       obgnme              22.0000              47.8892             -25.8892              1.00000
+ obs_e:238954.0_n:8189678.0_x:238954_y:8189678       obgnme              29.0000              48.4568             -19.4568              1.00000
+ obs_e:239587.0_n:8185586.0_x:239587_y:8185586       obgnme              9.00000              29.1294             -20.1294              1.00000
+ obs_e:239760.0_n:8190677.0_x:239760_y:8190677       obgnme              34.0000              43.7390             -9.73904              1.00000
+ obs_e:240931.0_n:8186974.0_x:240931_y:8186974       obgnme              9.00000              29.4551             -20.4551              1.00000
+ obs_e:241878.0_n:8190407.0_x:241878_y:8190407       obgnme              14.0000              31.1582             -17.1582              1.00000
+ obs_e:244750.0_n:8189532.0_x:244750_y:8189532       obgnme              25.0000              9.53044              15.4696              1.00000
+ obs_e:244814.0_n:8189459.0_x:244814_y:8189459       obgnme              6.00000              9.08339             -3.08339              1.00000
+ obs_e:245486.0_n:8201343.0_x:245486_y:8201343       obgnme              4.00000            0.0175040              3.98250              1.00000
+ obs_e:247863.0_n:8185501.0_x:247863_y:8185501       obgnme              6.00000             0.154173              5.84583              1.00000
+
+Final composite objective function 
+  Final phi                                           Total : 8217.89
+  Contribution to phi from observation group       "obgnme" : 8217.89
+
+
+Number of forward model runs performed during optimization: 1

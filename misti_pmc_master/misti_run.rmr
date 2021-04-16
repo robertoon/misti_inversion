@@ -1,0 +1,194 @@
+
+PANTHER master listening on socket:0.0.0.0:4004 (IPv4)
+running model 50 times
+04/16/21 13:59:31->waiting for agents to appear
+
+04/16/21 13:59:32->new connection from: localhost:55503
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0:localhost:55503, number of agents: 1
+04/16/21 13:59:33->new connection from: localhost:55504
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1:localhost:55504, number of agents: 2
+04/16/21 13:59:33->new connection from: localhost:55505
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2:localhost:55505, number of agents: 3
+04/16/21 13:59:33->new connection from: localhost:55506
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3:localhost:55506, number of agents: 4
+04/16/21 13:59:33->new connection from: localhost:55507
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4:localhost:55507, number of agents: 5
+04/16/21 13:59:33->new connection from: localhost:55508
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5:localhost:55508, number of agents: 6
+04/16/21 13:59:33->new connection from: localhost:55509
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6:localhost:55509, number of agents: 7
+04/16/21 13:59:33->new connection from: localhost:55510
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7:localhost:55510, number of agents: 8
+04/16/21 13:59:33->new connection from: localhost:55511
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8:localhost:55511, number of agents: 9
+04/16/21 13:59:33->new connection from: localhost:55512
+04/16/21 13:59:33->initializing new agent connection from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9:localhost:55512, number of agents: 10
+04/16/21 13:59:33->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0:localhost:55503
+04/16/21 13:59:33->Sending run 0 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (group id:2, run id:0, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1:localhost:55504
+04/16/21 13:59:34->Sending run 1 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (group id:2, run id:1, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2:localhost:55505
+04/16/21 13:59:34->Sending run 2 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (group id:2, run id:2, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3:localhost:55506
+04/16/21 13:59:34->Sending run 3 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (group id:2, run id:3, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4:localhost:55507
+04/16/21 13:59:34->Sending run 4 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (group id:2, run id:4, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5:localhost:55508
+04/16/21 13:59:34->Sending run 5 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (group id:2, run id:5, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6:localhost:55509
+04/16/21 13:59:34->Sending run 6 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (group id:2, run id:6, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7:localhost:55510
+04/16/21 13:59:34->Sending run 7 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (group id:2, run id:7, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8:localhost:55511
+04/16/21 13:59:34->Sending run 8 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (group id:2, run id:8, concurrent runs:1)
+04/16/21 13:59:34->new agent ready: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9:localhost:55512
+04/16/21 13:59:34->Sending run 9 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (group id:2, run id:9, concurrent runs:1)
+04/16/21 13:59:37->run 1 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (run time:0.05445 min, avg run time:0.05445 min, group id:2, run id: 1 concurrent:1)
+04/16/21 13:59:37->run 1 processed
+04/16/21 13:59:37->Sending run 10 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (group id:2, run id:10, concurrent runs:1)
+04/16/21 13:59:37->run 4 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (run time:0.0542667 min, avg run time:0.0543583 min, group id:2, run id: 4 concurrent:1)
+04/16/21 13:59:37->run 4 processed
+04/16/21 13:59:37->Sending run 11 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (group id:2, run id:11, concurrent runs:1)
+04/16/21 13:59:37->run 6 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (run time:0.0541667 min, avg run time:0.0542944 min, group id:2, run id: 6 concurrent:1)
+04/16/21 13:59:37->run 6 processed
+04/16/21 13:59:37->Sending run 12 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (group id:2, run id:12, concurrent runs:1)
+04/16/21 13:59:37->run 7 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (run time:0.0544333 min, avg run time:0.0543292 min, group id:2, run id: 7 concurrent:1)
+04/16/21 13:59:37->run 7 processed
+04/16/21 13:59:37->Sending run 13 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (group id:2, run id:13, concurrent runs:1)
+04/16/21 13:59:38->run 3 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (run time:0.0711833 min, avg run time:0.0577 min, group id:2, run id: 3 concurrent:1)
+04/16/21 13:59:38->run 3 processed
+04/16/21 13:59:38->Sending run 14 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (group id:2, run id:14, concurrent runs:1)
+04/16/21 13:59:39->run 9 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (run time:0.07125 min, avg run time:0.0599583 min, group id:2, run id: 9 concurrent:1)
+04/16/21 13:59:39->run 9 processed
+04/16/21 13:59:39->Sending run 15 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (group id:2, run id:15, concurrent runs:1)
+04/16/21 13:59:39->run 0 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (run time:0.0882333 min, avg run time:0.0639976 min, group id:2, run id: 0 concurrent:1)
+04/16/21 13:59:39->run 0 processed
+04/16/21 13:59:39->Sending run 16 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (group id:2, run id:16, concurrent runs:1)
+04/16/21 13:59:39->run 8 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (run time:0.0879833 min, avg run time:0.0669958 min, group id:2, run id: 8 concurrent:1)
+04/16/21 13:59:39->run 8 processed
+04/16/21 13:59:39->Sending run 17 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (group id:2, run id:17, concurrent runs:1)
+04/16/21 13:59:41->run 10 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (run time:0.06275 min, avg run time:0.0680333 min, group id:2, run id: 10 concurrent:1)
+04/16/21 13:59:41->run 10 processed
+04/16/21 13:59:41->Sending run 18 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (group id:2, run id:18, concurrent runs:1)
+04/16/21 13:59:41->run 5 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (run time:0.120717 min, avg run time:0.073887 min, group id:2, run id: 5 concurrent:1)
+04/16/21 13:59:41->run 5 processed
+04/16/21 13:59:41->Sending run 19 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (group id:2, run id:19, concurrent runs:1)
+04/16/21 13:59:42->run 13 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (run time:0.0628333 min, avg run time:0.0748204 min, group id:2, run id: 13 concurrent:1)
+04/16/21 13:59:42->run 13 processed
+04/16/21 13:59:42->Sending run 20 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (group id:2, run id:20, concurrent runs:1)
+04/16/21 13:59:42->run 15 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (run time:0.0626833 min, avg run time:0.0738685 min, group id:2, run id: 15 concurrent:1)
+04/16/21 13:59:42->run 15 processed
+04/16/21 13:59:42->Sending run 21 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (group id:2, run id:21, concurrent runs:1)
+04/16/21 13:59:42->run 2 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (run time:0.137267 min, avg run time:0.0802083 min, group id:2, run id: 2 concurrent:1)
+04/16/21 13:59:42->run 2 processed
+04/16/21 13:59:42->Sending run 22 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (group id:2, run id:22, concurrent runs:1)
+04/16/21 13:59:42->run 11 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (run time:0.0713167 min, avg run time:0.0819133 min, group id:2, run id: 11 concurrent:1)
+04/16/21 13:59:42->run 11 processed
+04/16/21 13:59:42->Sending run 23 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (group id:2, run id:23, concurrent runs:1)
+04/16/21 13:59:43->run 12 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (run time:0.0711667 min, avg run time:0.0836133 min, group id:2, run id: 12 concurrent:1)
+04/16/21 13:59:43->run 12 processed
+04/16/21 13:59:43->Sending run 24 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (group id:2, run id:24, concurrent runs:1)
+04/16/21 13:59:43->run 17 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (run time:0.0709333 min, avg run time:0.0819083 min, group id:2, run id: 17 concurrent:1)
+04/16/21 13:59:43->run 17 processed
+04/16/21 13:59:43->Sending run 25 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (group id:2, run id:25, concurrent runs:1)
+04/16/21 13:59:43->run 18 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (run time:0.0499667 min, avg run time:0.08063 min, group id:2, run id: 18 concurrent:1)
+04/16/21 13:59:43->run 18 processed
+04/16/21 13:59:43->Sending run 26 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (group id:2, run id:26, concurrent runs:1)
+04/16/21 13:59:44->run 19 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (run time:0.0873833 min, avg run time:0.0772967 min, group id:2, run id: 19 concurrent:1)
+04/16/21 13:59:44->run 19 processed
+04/16/21 13:59:44->Sending run 27 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (group id:2, run id:27, concurrent runs:1)
+04/16/21 13:59:45->run 16 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (run time:0.0960167 min, avg run time:0.078075 min, group id:2, run id: 16 concurrent:1)
+04/16/21 13:59:45->run 16 processed
+04/16/21 13:59:45->Sending run 28 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (group id:2, run id:28, concurrent runs:1)
+04/16/21 13:59:45->run 20 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (run time:0.0586 min, avg run time:0.0776517 min, group id:2, run id: 20 concurrent:1)
+04/16/21 13:59:45->run 20 processed
+04/16/21 13:59:45->Sending run 29 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (group id:2, run id:29, concurrent runs:1)
+04/16/21 13:59:45->run 14 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (run time:0.0960167 min, avg run time:0.080135 min, group id:2, run id: 14 concurrent:1)
+04/16/21 13:59:45->run 14 processed
+04/16/21 13:59:45->Sending run 30 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (group id:2, run id:30, concurrent runs:1)
+04/16/21 13:59:46->run 26 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (run time:0.04345 min, avg run time:0.0794833 min, group id:2, run id: 26 concurrent:1)
+04/16/21 13:59:46->run 26 processed
+04/16/21 13:59:46->Sending run 31 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (group id:2, run id:31, concurrent runs:1)
+04/16/21 13:59:47->run 25 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (run time:0.0710333 min, avg run time:0.0794933 min, group id:2, run id: 25 concurrent:1)
+04/16/21 13:59:47->run 25 processed
+04/16/21 13:59:47->Sending run 32 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (group id:2, run id:32, concurrent runs:1)
+04/16/21 13:59:47->run 21 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (run time:0.0754333 min, avg run time:0.0807683 min, group id:2, run id: 21 concurrent:1)
+04/16/21 13:59:47->run 21 processed
+04/16/21 13:59:47->Sending run 33 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (group id:2, run id:33, concurrent runs:1)
+04/16/21 13:59:48->run 27 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (run time:0.0707833 min, avg run time:0.0791083 min, group id:2, run id: 27 concurrent:1)
+04/16/21 13:59:48->run 27 processed
+04/16/21 13:59:48->Sending run 34 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (group id:2, run id:34, concurrent runs:1)
+04/16/21 13:59:50->run 23 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (run time:0.0958833 min, avg run time:0.081565 min, group id:2, run id: 23 concurrent:1)
+04/16/21 13:59:50->run 23 processed
+04/16/21 13:59:50->Sending run 35 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (group id:2, run id:35, concurrent runs:1)
+04/16/21 13:59:50->run 24 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (run time:0.0958833 min, avg run time:0.0840367 min, group id:2, run id: 24 concurrent:1)
+04/16/21 13:59:50->run 24 processed
+04/16/21 13:59:50->Sending run 36 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (group id:2, run id:36, concurrent runs:1)
+04/16/21 13:59:50->run 31 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (run time:0.0572833 min, avg run time:0.08542 min, group id:2, run id: 31 concurrent:1)
+04/16/21 13:59:50->run 31 processed
+04/16/21 13:59:50->Sending run 37 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (group id:2, run id:37, concurrent runs:1)
+04/16/21 13:59:50->run 33 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (run time:0.0647833 min, avg run time:0.084355 min, group id:2, run id: 33 concurrent:1)
+04/16/21 13:59:50->run 33 processed
+04/16/21 13:59:50->Sending run 38 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (group id:2, run id:38, concurrent runs:1)
+04/16/21 13:59:51->run 34 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (run time:0.06245 min, avg run time:0.0835217 min, group id:2, run id: 34 concurrent:1)
+04/16/21 13:59:51->run 34 processed
+04/16/21 13:59:51->Sending run 39 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (group id:2, run id:39, concurrent runs:1)
+04/16/21 13:59:51->run 28 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (run time:0.0998333 min, avg run time:0.0839033 min, group id:2, run id: 28 concurrent:1)
+04/16/21 13:59:51->run 28 processed
+04/16/21 13:59:51->Sending run 40 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (group id:2, run id:40, concurrent runs:1)
+04/16/21 13:59:51->run 22 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (run time:0.145783 min, avg run time:0.084755 min, group id:2, run id: 22 concurrent:1)
+04/16/21 13:59:51->run 22 processed
+04/16/21 13:59:51->Sending run 41 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (group id:2, run id:41, concurrent runs:1)
+04/16/21 13:59:52->sending kill request. reason: overdue. duration:0.12095, avg:0.0586, run id:29,  num previous fails:0, agent: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7
+04/16/21 13:59:52->run 29 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (run time:0.0900667 min, avg run time:0.0879017 min, group id:2, run id: 29 concurrent:0)
+04/16/21 13:59:52->run 29 processed
+04/16/21 13:59:52->Sending run 42 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (group id:2, run id:42, concurrent runs:1)
+04/16/21 13:59:52->run 32 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (run time:0.07945 min, avg run time:0.0887433 min, group id:2, run id: 32 concurrent:1)
+04/16/21 13:59:52->run 32 processed
+04/16/21 13:59:52->Sending run 43 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (group id:2, run id:43, concurrent runs:1)
+04/16/21 13:59:53->run 30 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (run time:0.108983 min, avg run time:0.09004 min, group id:2, run id: 30 concurrent:1)
+04/16/21 13:59:53->run 30 processed
+04/16/21 13:59:53->Sending run 44 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (group id:2, run id:44, concurrent runs:1)
+04/16/21 13:59:54->run 37 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (run time:0.0642333 min, avg run time:0.090735 min, group id:2, run id: 37 concurrent:1)
+04/16/21 13:59:54->run 37 processed
+04/16/21 13:59:54->Sending run 45 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (group id:2, run id:45, concurrent runs:1)
+04/16/21 13:59:54->run 39 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (run time:0.0581833 min, avg run time:0.0903083 min, group id:2, run id: 39 concurrent:1)
+04/16/21 13:59:54->run 39 processed
+04/16/21 13:59:54->Sending run 46 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (group id:2, run id:46, concurrent runs:1)
+04/16/21 13:59:56->run 41 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (run time:0.116917 min, avg run time:0.0874217 min, group id:2, run id: 41 concurrent:1)
+04/16/21 13:59:56->run 41 processed
+04/16/21 13:59:56->Sending run 47 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (group id:2, run id:47, concurrent runs:1)
+04/16/21 13:59:57->run 35 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (run time:0.108067 min, avg run time:0.08864 min, group id:2, run id: 35 concurrent:1)
+04/16/21 13:59:57->run 35 processed
+04/16/21 13:59:57->Sending run 48 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (group id:2, run id:48, concurrent runs:1)
+04/16/21 13:59:57->run 36 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (run time:0.10805 min, avg run time:0.0898567 min, group id:2, run id: 36 concurrent:1)
+04/16/21 13:59:57->run 36 processed
+04/16/21 13:59:57->Sending run 49 to: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (group id:2, run id:49, concurrent runs:1)
+04/16/21 13:59:58->run 46 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_5  (run time:0.0647 min, avg run time:0.0905083 min, group id:2, run id: 46 concurrent:1)
+04/16/21 13:59:58->run 46 processed
+04/16/21 13:59:58->run 43 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_8  (run time:0.0915667 min, avg run time:0.09172 min, group id:2, run id: 43 concurrent:1)
+04/16/21 13:59:58->run 43 processed
+04/16/21 13:59:59->run 38 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_9  (run time:0.101233 min, avg run time:0.095365 min, group id:2, run id: 38 concurrent:1)
+04/16/21 13:59:59->run 38 processed
+04/16/21 14:00:00->run 44 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_3  (run time:0.1148 min, avg run time:0.0959467 min, group id:2, run id: 44 concurrent:1)
+04/16/21 14:00:00->run 44 processed
+04/16/21 14:00:00->run 45 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_1  (run time:0.0846667 min, avg run time:0.09799 min, group id:2, run id: 45 concurrent:1)
+04/16/21 14:00:00->run 45 processed
+04/16/21 14:00:01->run 48 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_4  (run time:0.0896 min, avg run time:0.0961433 min, group id:2, run id: 48 concurrent:1)
+04/16/21 14:00:01->run 48 processed
+04/16/21 14:00:01->run 49 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_6  (run time:0.0896333 min, avg run time:0.0943017 min, group id:2, run id: 49 concurrent:1)
+04/16/21 14:00:01->run 49 processed
+04/16/21 14:00:01->run 40 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_0  (run time:0.135783 min, avg run time:0.0978967 min, group id:2, run id: 40 concurrent:1)
+04/16/21 14:00:01->run 40 processed
+04/16/21 14:00:02->run 42 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_7  (run time:0.123333 min, avg run time:0.101223 min, group id:2, run id: 42 concurrent:1)
+04/16/21 14:00:02->run 42 processed
+04/16/21 14:00:02->run 47 received from: localhost$/Users/robertconstantinescu/Documents/Coduri Python/worker_2  (run time:0.102767 min, avg run time:0.0998083 min, group id:2, run id: 47 concurrent:1)
+04/16/21 14:00:02->run 47 processed
+
+---------------------
+   50 runs complete :  0 runs failed
+
+
+04/16/21 14:00:02->Started idle ping thread.
+04/16/21 14:00:02->Panther idle ping thread resumed.
+04/16/21 14:00:03->Stopped idle ping thread, as Panther manager is shutting down.

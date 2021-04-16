@@ -10,7 +10,7 @@ binary compiled on Nov 11 2020 at 17:07:37
 using control file: "misti.pst"
 
 in directory: "/Users/robertconstantinescu/Documents/Coduri Python/misti_inversion/misti"
-on host: "VPN-157-192.vpn.usf.edu"
+on host: "U232946.cas.usf.edu"
 
 
 Note 'NOPTMAX' == 0, switching to forgiveness mode when checking inputs
@@ -216,15 +216,15 @@ pargp                 RELATIVE                     0.01                        0
 
 Parameter information
 NAME               TRANSFORMATION        CHANGE LIMIT  INITIAL VALUE    LOWER BOUND    UPPER BOUND          GROUP          SCALE         OFFSET  DERIVATIVE COMMAND
-column_height      log                     FACTOR          25000           5000          45000          pargp              1              0                   1
-diffusion_coef     log                     FACTOR           5000           2000           8000          pargp              1              0                   1
-ellipse_major_axis none                    FACTOR          11000           1000          25000          pargp              1              0                   1
+column_height      log                     FACTOR          25000          10000          30000          pargp              1              0                   1
+diffusion_coef     log                     FACTOR           1500            300           3000          pargp              1              0                   1
+ellipse_major_axis none                    FACTOR          11000           5000          25000          pargp              1              0                   1
 ellipse_minor_axis tied                    FACTOR          11000        1.1e-10        1.1e+10          pargp              1              0                   1
-tgsd_mean          none                  RELATIVE          -1.99             -6              6          pargp              1              0                   1
+tgsd_mean          none                  RELATIVE          -1.99             -2              2          pargp              1              0                   1
 tgsd_sigma         fixed                   FACTOR              1        1.1e-10        1.1e+10          pargp              1              0                   1
-total_erupted_mass log                     FACTOR          1e+11          1e+10          2e+11          pargp              1              0                   1
-wind_direction     log                     FACTOR            220            180            270          pargp              1              0                   1
-wind_speed         log                     FACTOR              5            0.1             20          pargp              1              0                   1
+total_erupted_mass log                     FACTOR          1e+11          1e+10          5e+11          pargp              1              0                   1
+wind_direction     log                     FACTOR            220            160            260          pargp              1              0                   1
+wind_speed         log                     FACTOR              5            0.5             20          pargp              1              0                   1
 
 
 
@@ -299,7 +299,7 @@ FINAL OPTIMISATION RESULTS
         Name         Value
     ------------  ------------
     column_height         25000
-    diffusion_coef          5000
+    diffusion_coef          1500
     ellipse_major_axis         11000
     ellipse_minor_axis         11000
     tgsd_mean            -1.99
@@ -311,40 +311,40 @@ FINAL OPTIMISATION RESULTS
 
   Observations with optimal model-simulated equivalents and residuals
                  Name        Group             Measured             Modelled             Residual               Weight
- obs_e:221457.0_n:8184523.0_x:221457_y:8184523       obgnme              7.00000              1.32992              5.67008              1.00000
- obs_e:223413.0_n:8178296.0_x:223413_y:8178296       obgnme              6.00000              1.39591              4.60409              1.00000
- obs_e:228433.0_n:8192778.0_x:228433_y:8192778       obgnme              7.00000              7.17487            -0.174874              1.00000
- obs_e:229788.0_n:8193427.0_x:229788_y:8193427       obgnme              5.00000              9.34308             -4.34308              1.00000
- obs_e:231595.0_n:8198480.0_x:231595_y:8198480       obgnme              4.00000              4.03508           -0.0350770              1.00000
- obs_e:231694.0_n:8197619.0_x:231694_y:8197619       obgnme              4.00000              5.51573             -1.51573              1.00000
- obs_e:233194.0_n:8190440.0_x:233194_y:8190440       obgnme              10.0000              24.5220             -14.5220              1.00000
- obs_e:233837.0_n:8195775.0_x:233837_y:8195775       obgnme              10.0000              13.6426             -3.64264              1.00000
- obs_e:233908.0_n:8189011.0_x:233908_y:8189011       obgnme              16.0000              27.2612             -11.2612              1.00000
- obs_e:234195.0_n:8198194.0_x:234195_y:8198194       obgnme              4.00000              7.33385             -3.33385              1.00000
- obs_e:235327.0_n:8184950.0_x:235327_y:8184950       obgnme              20.0000              22.4759             -2.47591              1.00000
- obs_e:235614.0_n:8190354.0_x:235614_y:8190354       obgnme              14.0000              31.3411             -17.3411              1.00000
- obs_e:235682.0_n:8187652.0_x:235682_y:8187652       obgnme              25.0000              29.7513             -4.75133              1.00000
- obs_e:236163.0_n:8190958.0_x:236163_y:8190958       obgnme              28.0000              31.7040             -3.70404              1.00000
- obs_e:236538.0_n:8191417.0_x:236538_y:8191417       obgnme              20.0000              31.5300             -11.5300              1.00000
- obs_e:236616.0_n:8177416.0_x:236616_y:8177416       obgnme              8.00000              4.31846              3.68154              1.00000
- obs_e:236686.0_n:8192411.0_x:236686_y:8192411       obgnme              28.0000              29.6065             -1.60650              1.00000
- obs_e:237006.0_n:8202926.0_x:237006_y:8202926       obgnme              8.00000              1.15890              6.84110              1.00000
- obs_e:237454.0_n:8185525.0_x:237454_y:8185525       obgnme              20.0000              24.7730             -4.77298              1.00000
- obs_e:237496.0_n:8190167.0_x:237496_y:8190167       obgnme              30.0000              33.2686             -3.26861              1.00000
- obs_e:238665.0_n:8188244.0_x:238665_y:8188244       obgnme              22.0000              30.8217             -8.82167              1.00000
- obs_e:238954.0_n:8189678.0_x:238954_y:8189678       obgnme              29.0000              31.9638             -2.96385              1.00000
- obs_e:239587.0_n:8185586.0_x:239587_y:8185586       obgnme              9.00000              22.1402             -13.1402              1.00000
- obs_e:239760.0_n:8190677.0_x:239760_y:8190677       obgnme              34.0000              30.2826              3.71737              1.00000
- obs_e:240931.0_n:8186974.0_x:240931_y:8186974       obgnme              9.00000              22.6229             -13.6229              1.00000
- obs_e:241878.0_n:8190407.0_x:241878_y:8190407       obgnme              14.0000              23.7436             -9.74358              1.00000
- obs_e:244750.0_n:8189532.0_x:244750_y:8189532       obgnme              25.0000              12.4890              12.5110              1.00000
- obs_e:244814.0_n:8189459.0_x:244814_y:8189459       obgnme              6.00000              12.2282             -6.22816              1.00000
- obs_e:245486.0_n:8201343.0_x:245486_y:8201343       obgnme              4.00000             0.814332              3.18567              1.00000
- obs_e:247863.0_n:8185501.0_x:247863_y:8185501       obgnme              6.00000              2.62073              3.37927              1.00000
+ obs_e:221457.0_n:8184523.0_x:221457_y:8184523       obgnme              7.00000             0.371158              6.62884              1.00000
+ obs_e:223413.0_n:8178296.0_x:223413_y:8178296       obgnme              6.00000              1.01012              4.98988              1.00000
+ obs_e:228433.0_n:8192778.0_x:228433_y:8192778       obgnme              7.00000              2.89978              4.10022              1.00000
+ obs_e:229788.0_n:8193427.0_x:229788_y:8193427       obgnme              5.00000              4.82164             0.178363              1.00000
+ obs_e:231595.0_n:8198480.0_x:231595_y:8198480       obgnme              4.00000             0.501232              3.49877              1.00000
+ obs_e:231694.0_n:8197619.0_x:231694_y:8197619       obgnme              4.00000              1.14870              2.85130              1.00000
+ obs_e:233194.0_n:8190440.0_x:233194_y:8190440       obgnme              10.0000              35.0777             -25.0777              1.00000
+ obs_e:233837.0_n:8195775.0_x:233837_y:8195775       obgnme              10.0000              10.7196            -0.719580              1.00000
+ obs_e:233908.0_n:8189011.0_x:233908_y:8189011       obgnme              16.0000              42.1177             -26.1177              1.00000
+ obs_e:234195.0_n:8198194.0_x:234195_y:8198194       obgnme              4.00000              2.57701              1.42299              1.00000
+ obs_e:235327.0_n:8184950.0_x:235327_y:8184950       obgnme              20.0000              33.1407             -13.1407              1.00000
+ obs_e:235614.0_n:8190354.0_x:235614_y:8190354       obgnme              14.0000              49.2651             -35.2651              1.00000
+ obs_e:235682.0_n:8187652.0_x:235682_y:8187652       obgnme              25.0000              47.7125             -22.7125              1.00000
+ obs_e:236163.0_n:8190958.0_x:236163_y:8190958       obgnme              28.0000              49.0854             -21.0854              1.00000
+ obs_e:236538.0_n:8191417.0_x:236538_y:8191417       obgnme              20.0000              48.0240             -28.0240              1.00000
+ obs_e:236616.0_n:8177416.0_x:236616_y:8177416       obgnme              8.00000              2.09111              5.90889              1.00000
+ obs_e:236686.0_n:8192411.0_x:236686_y:8192411       obgnme              28.0000              43.5179             -15.5179              1.00000
+ obs_e:237006.0_n:8202926.0_x:237006_y:8202926       obgnme              8.00000            0.0207870              7.97921              1.00000
+ obs_e:237454.0_n:8185525.0_x:237454_y:8185525       obgnme              20.0000              36.5777             -16.5777              1.00000
+ obs_e:237496.0_n:8190167.0_x:237496_y:8190167       obgnme              30.0000              51.4810             -21.4810              1.00000
+ obs_e:238665.0_n:8188244.0_x:238665_y:8188244       obgnme              22.0000              47.8892             -25.8892              1.00000
+ obs_e:238954.0_n:8189678.0_x:238954_y:8189678       obgnme              29.0000              48.4568             -19.4568              1.00000
+ obs_e:239587.0_n:8185586.0_x:239587_y:8185586       obgnme              9.00000              29.1294             -20.1294              1.00000
+ obs_e:239760.0_n:8190677.0_x:239760_y:8190677       obgnme              34.0000              43.7390             -9.73904              1.00000
+ obs_e:240931.0_n:8186974.0_x:240931_y:8186974       obgnme              9.00000              29.4551             -20.4551              1.00000
+ obs_e:241878.0_n:8190407.0_x:241878_y:8190407       obgnme              14.0000              31.1582             -17.1582              1.00000
+ obs_e:244750.0_n:8189532.0_x:244750_y:8189532       obgnme              25.0000              9.53044              15.4696              1.00000
+ obs_e:244814.0_n:8189459.0_x:244814_y:8189459       obgnme              6.00000              9.08339             -3.08339              1.00000
+ obs_e:245486.0_n:8201343.0_x:245486_y:8201343       obgnme              4.00000            0.0175040              3.98250              1.00000
+ obs_e:247863.0_n:8185501.0_x:247863_y:8185501       obgnme              6.00000             0.154173              5.84583              1.00000
 
 Final composite objective function 
-  Final phi                                           Total : 1779.60
-  Contribution to phi from observation group       "obgnme" : 1779.60
+  Final phi                                           Total : 8217.89
+  Contribution to phi from observation group       "obgnme" : 8217.89
 
 
 Number of forward model runs performed during optimization: 1
