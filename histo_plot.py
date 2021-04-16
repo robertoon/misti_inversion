@@ -6,7 +6,7 @@ import seaborn
 from math import sqrt
 fontname = 'Helvetica'
 sb_dark = seaborn.dark_palette('skyblue', 8, reverse=True)
-seaborn.set(palette=sb_dark)
+#seaborn.set(palette=sb_dark)
 np.seterr(divide='ignore', invalid='ignore')
 
 fig, ax = plt.subplots(nrows=4, ncols=2, figsize=(7.48, 9.05))
