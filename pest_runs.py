@@ -290,6 +290,7 @@ def plot_glue_results(case,glm_dir=None):
     pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
 
     fosm_df = None
+    glm_pst = None
     if glm_dir is not None:
         glm_pst = pyemu.Pst(os.path.join(glm_dir, case + "_run.pst"))
         par = glm_pst.parameter_data
@@ -326,11 +327,16 @@ def plot_glue_results(case,glm_dir=None):
 
     fig,ax = plt.subplots(1,1,figsize=(4,4))
     
-    ax.hist(pr_oe.phi_vector.apply(np.log10),bins=100,facecolor="0.5",alpha=0.5,edgecolor="none",density=False)
-    ax.hist(pt_oe.phi_vector.apply(np.log10),bins=100,facecolor="b",alpha=0.5,edgecolor="none",density=False)
-    ax.plot([pst.phi,pst.phi],ax.get_ylim(),"b--")
+    ax.hist(pr_oe.phi_vector.apply(np.log10),bins=100,facecolor="0.5",alpha=0.5,edgecolor="none",density=False,label="prior")
+    ax.hist(pt_oe.phi_vector.apply(np.log10),bins=100,facecolor="b",alpha=0.5,edgecolor="none",density=False,label="posterior")
+    ylim = ax.get_ylim()
+    if glm_pst is not None:
+        ax.plot([np.log10(glm_pst.phi), np.log10(glm_pst.phi)], ylim, "r--",label="glm phi")
+    ax.plot([np.log10(best_phi),np.log10(best_phi)],ylim,"b--",label="GLUE best phi")
+    ax.set_ylim(ylim)
     ax.set_title("best phi:{0:5.2E}, acceptable phi:{1:5.2E}, number of realizations passing: {2}".format(best_phi,acc_phi,pt_oe.shape[0]))
     ax.set_xlabel("$log_{10} \phi$")
+    ax.legend(loc="upper right")
     plt.savefig(os.path.join(m_d,"phi_hist.pdf"))
     plt.close(fig)
   
@@ -342,21 +348,30 @@ def plot_glue_results(case,glm_dir=None):
     with PdfPages(os.path.join(m_d,"par_summary.pdf")) as pdf:
         for par_name in pst.adj_par_names:
             fig,ax = plt.subplots(1,1,figsize=(6,3))
-            ax.hist(pr_pe.loc[:,par_name],bins=bins,alpha=0.5,edgecolor="none",facecolor="0.5",density=True)
-            ax.hist(pt_pe.loc[:, par_name], bins=bins, alpha=0.5, edgecolor="none", facecolor="b",density=True)
+            ax.hist(pr_pe.loc[:,par_name],bins=bins,alpha=0.5,edgecolor="none",facecolor="0.5",density=True,label="prior")
+            ax.hist(pt_pe.loc[:, par_name], bins=bins, alpha=0.5, edgecolor="none", facecolor="b",density=True,label="posterior")
             ax.set_title(par_name,loc="left")
             if fosm_df is not None:
                 axt = plt.twinx(ax)
                 print(par_name,fosm_df.loc[par_name,"prior_mean"],fosm_df.loc[par_name,"prior_stdev"])
                 pr_x,pr_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[par_name,"prior_mean"],fosm_df.loc[par_name,"prior_stdev"])
-                axt.plot(pr_x,pr_y,color="0.5",dashes=(1,1),lw=3)
+                axt.plot(pr_x,pr_y,color="0.5",dashes=(1,1),lw=3,label="FOSM prior")
                 pt_x, pt_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[par_name, "post_mean"],
                                                                     fosm_df.loc[par_name, "post_stdev"])
-                axt.plot(pt_x, pt_y, color="b", dashes=(1, 1), lw=3)
+                axt.plot(pt_x, pt_y, color="b", dashes=(1, 1), lw=3,label="FOSM posterior")
+                axt.set_yticks([])
+                ylim = ax.get_ylim()
+                xlim = ax.get_xlim()
+                ax.plot([0,0],[0,0],color="b", dashes=(1, 1), lw=3,label="FOSM posterior")
+                ax.plot([0, 0], [0, 0], color="0.5", dashes=(1, 1), lw=3, label="FOSM prior")
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+
+            ax.legend(loc="upper right")
             plt.tight_layout()
             pdf.savefig()
             plt.close(fig)
-    return
+
     obs = pst.observation_data
     
     pyemu.plot_utils.ensemble_helper({"b": pt_oe,"0.5":pr_oe},
@@ -377,10 +392,10 @@ if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    setup(volcano)
+    #setup(volcano)
     #sensitivity_experiment()
     #run_prior_monte_carlo(volcano,num_reals=500,num_workers=10)
-    run_glm(volcano,noptmax=10,num_reals=100,num_workers=15)
+    run_glm(volcano,noptmax=10,num_reals=0,num_workers=15)
     #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     plot_glue_results(volcano,glm_dir="misti_glm_master")
     end=time()
