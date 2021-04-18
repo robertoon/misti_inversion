@@ -3,6 +3,7 @@ from time import time
 import shutil
 import numpy as np
 import pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 import pyemu
 
@@ -95,17 +96,17 @@ def setup(case):
     par.loc["total_erupted_mass", "parlbnd"] = 0.1e11
     par.loc["total_erupted_mass", "parubnd"] = 5.0e11
     par.loc["total_erupted_mass", "parval1"] = 1.0e11
-    par.loc["total_erupted_mass", "partrans"] = "log"
+    par.loc["total_erupted_mass", "partrans"] = "none"
 
     par.loc["column_height", "parlbnd"] = 10000
     par.loc["column_height", "parubnd"] = 30000
     par.loc["column_height", "parval1"] = 25000
-    par.loc["column_height", "partrans"] = "log"
+    par.loc["column_height", "partrans"] = "none"
 
     par.loc["diffusion_coef", "parlbnd"] = 300
     par.loc["diffusion_coef", "parubnd"] = 3000
     par.loc["diffusion_coef", "parval1"] = 1500
-    par.loc["diffusion_coef", "partrans"] = "log"
+    par.loc["diffusion_coef", "partrans"] = "none"
 
     # it looks like mean grainsize is already in log space?
     par.loc["tgsd_mean", "parlbnd"] = -2
@@ -129,12 +130,12 @@ def setup(case):
     par.loc["wind_speed", "parlbnd"] = 0.5
     par.loc["wind_speed", "parubnd"] = 20.0
     par.loc["wind_speed", "parval1"] = 5.0
-    par.loc["wind_speed", "partrans"] = "log"
+    par.loc["wind_speed", "partrans"] = "none"
 
     par.loc["wind_direction", "parlbnd"] = 160
     par.loc["wind_direction", "parubnd"] = 260
     par.loc["wind_direction", "parval1"] = 220
-    par.loc["wind_direction", "partrans"] = "log"
+    par.loc["wind_direction", "partrans"] = "none"
 
     # set the observed thickness values
     pst.try_parse_name_metadata()  # this sets individual columns for northing and easting
@@ -279,11 +280,27 @@ def sensitivity_experiment():
     print("base phi:",base_phi,"perturbed phi:", pert_phi)
 
 
-def plot_glue_results(case):
-    """plot the pestpp-glm results"""
+def plot_glue_results(case,glm_dir=None):
+    """plot the rejection sampling results.  If glm_dir is not None, then glm-based fosm
+    distributions are also plotted
+
+    """
+
     m_d = case+"_pmc_master"
     pst = pyemu.Pst(os.path.join(m_d, case+"_run.pst"))
-    #print(pst.phi)
+
+    fosm_df = None
+    if glm_dir is not None:
+        glm_pst = pyemu.Pst(os.path.join(glm_dir, case + "_run.pst"))
+        par = glm_pst.parameter_data
+        log_pars = par.loc[par.partrans == "log", "parnme"].values
+        assert os.path.exists(glm_dir)
+        fosm_punc_file = os.path.join(glm_dir,case+"_run.par.usum.csv")
+        assert os.path.exists(fosm_punc_file),fosm_punc_file
+        fosm_df = pd.read_csv(fosm_punc_file,index_col=0)
+        fosm_df.index = fosm_df.index.map(str.lower)
+        fosm_df.loc[log_pars,:] = 10.0**fosm_df.loc[log_pars,:]
+
        
     pr_oe = pd.read_csv(os.path.join(m_d, case+"_run.0.obs.csv"), index_col=0)
 
@@ -318,9 +335,28 @@ def plot_glue_results(case):
     plt.close(fig)
   
 
-    pyemu.plot_utils.ensemble_helper({"b": pt_pe,"0.5":pr_pe}, bins=100,
-                                     filename=os.path.join(m_d, case+"_summary.pdf"))
-    plt.show()
+    #pyemu.plot_utils.ensemble_helper({"b": pt_pe,"0.5":pr_pe}, bins=100,
+    #                                 filename=os.path.join(m_d, case+"_summary.pdf"))
+    #plt.show()
+    bins = 20
+    with PdfPages(os.path.join(m_d,"par_summary.pdf")) as pdf:
+        for par_name in pst.adj_par_names:
+            fig,ax = plt.subplots(1,1,figsize=(6,3))
+            ax.hist(pr_pe.loc[:,par_name],bins=bins,alpha=0.5,edgecolor="none",facecolor="0.5",density=True)
+            ax.hist(pt_pe.loc[:, par_name], bins=bins, alpha=0.5, edgecolor="none", facecolor="b",density=True)
+            ax.set_title(par_name,loc="left")
+            if fosm_df is not None:
+                axt = plt.twinx(ax)
+                print(par_name,fosm_df.loc[par_name,"prior_mean"],fosm_df.loc[par_name,"prior_stdev"])
+                pr_x,pr_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[par_name,"prior_mean"],fosm_df.loc[par_name,"prior_stdev"])
+                axt.plot(pr_x,pr_y,color="0.5",dashes=(1,1),lw=3)
+                pt_x, pt_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[par_name, "post_mean"],
+                                                                    fosm_df.loc[par_name, "post_stdev"])
+                axt.plot(pt_x, pt_y, color="b", dashes=(1, 1), lw=3)
+            plt.tight_layout()
+            pdf.savefig()
+            plt.close(fig)
+    return
     obs = pst.observation_data
     
     pyemu.plot_utils.ensemble_helper({"b": pt_oe,"0.5":pr_oe},
@@ -341,12 +377,12 @@ if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    #setup(volcano)
+    setup(volcano)
     #sensitivity_experiment()
     #run_prior_monte_carlo(volcano,num_reals=500,num_workers=10)
-    #run_glm(volcano,num_reals=100,num_workers=15)
+    run_glm(volcano,noptmax=10,num_reals=100,num_workers=15)
     #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
-    plot_glue_results(volcano)
+    plot_glue_results(volcano,glm_dir="misti_glm_master")
     end=time()
     print("total execution=",end-start)
 

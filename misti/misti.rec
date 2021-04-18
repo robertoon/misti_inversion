@@ -9,8 +9,8 @@ binary compiled on Nov 11 2020 at 17:07:37
 
 using control file: "misti.pst"
 
-in directory: "/Users/robertconstantinescu/Documents/Coduri Python/misti_inversion/misti"
-on host: "U232946.cas.usf.edu"
+in directory: "/Users/JWhite/Dev/misti_inversion/misti"
+on host: "localadmins-MacBook-Pro.local"
 
 
 Note 'NOPTMAX' == 0, switching to forgiveness mode when checking inputs
@@ -216,15 +216,15 @@ pargp                 RELATIVE                     0.01                        0
 
 Parameter information
 NAME               TRANSFORMATION        CHANGE LIMIT  INITIAL VALUE    LOWER BOUND    UPPER BOUND          GROUP          SCALE         OFFSET  DERIVATIVE COMMAND
-column_height      log                     FACTOR          25000          10000          30000          pargp              1              0                   1
-diffusion_coef     log                     FACTOR           1500            300           3000          pargp              1              0                   1
+column_height      none                    FACTOR          25000          10000          30000          pargp              1              0                   1
+diffusion_coef     none                    FACTOR           1500            300           3000          pargp              1              0                   1
 ellipse_major_axis none                    FACTOR          11000           5000          25000          pargp              1              0                   1
 ellipse_minor_axis tied                    FACTOR          11000        1.1e-10        1.1e+10          pargp              1              0                   1
 tgsd_mean          none                  RELATIVE          -1.99             -2              2          pargp              1              0                   1
 tgsd_sigma         fixed                   FACTOR              1        1.1e-10        1.1e+10          pargp              1              0                   1
-total_erupted_mass log                     FACTOR          1e+11          1e+10          5e+11          pargp              1              0                   1
-wind_direction     log                     FACTOR            220            160            260          pargp              1              0                   1
-wind_speed         log                     FACTOR              5            0.5             20          pargp              1              0                   1
+total_erupted_mass none                    FACTOR          1e+11          1e+10          5e+11          pargp              1              0                   1
+wind_direction     none                    FACTOR            220            160            260          pargp              1              0                   1
+wind_speed         none                    FACTOR              5            0.5             20          pargp              1              0                   1
 
 
 
