@@ -392,7 +392,7 @@ if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    #setup(volcano)
+    setup(volcano)
     #sensitivity_experiment()
     #run_prior_monte_carlo(volcano,num_reals=500,num_workers=10)
     run_glm(volcano,noptmax=10,num_reals=0,num_workers=15)
