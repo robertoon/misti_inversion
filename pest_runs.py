@@ -301,8 +301,9 @@ def plot_glue_results(case,glm_dir=None):
         fosm_df = pd.read_csv(fosm_punc_file,index_col=0)
         fosm_df.index = fosm_df.index.map(str.lower)
         fosm_df.loc[log_pars,:] = 10.0**fosm_df.loc[log_pars,:]
+        glm_post_cov = pyemu.Cov.from_ascii(os.path.join(glm_dir,case+"_run.post.cov"))
+        glm_post_cc = glm_post_cov.to_pearson()
 
-       
     pr_oe = pd.read_csv(os.path.join(m_d, case+"_run.0.obs.csv"), index_col=0)
 
     pr_pe = pd.read_csv(os.path.join(m_d, case+"_run.0.par.csv"), index_col=0)
@@ -345,32 +346,64 @@ def plot_glue_results(case,glm_dir=None):
     #                                 filename=os.path.join(m_d, case+"_summary.pdf"))
     #plt.show()
     bins = 20
+    par_names = pst.adj_par_names
     with PdfPages(os.path.join(m_d,"par_summary.pdf")) as pdf:
-        for par_name in pst.adj_par_names:
-            fig,ax = plt.subplots(1,1,figsize=(6,3))
-            ax.hist(pr_pe.loc[:,par_name],bins=bins,alpha=0.5,edgecolor="none",facecolor="0.5",density=True,label="prior")
-            ax.hist(pt_pe.loc[:, par_name], bins=bins, alpha=0.5, edgecolor="none", facecolor="b",density=True,label="posterior")
-            ax.set_title(par_name,loc="left")
-            if fosm_df is not None:
-                axt = plt.twinx(ax)
-                print(par_name,fosm_df.loc[par_name,"prior_mean"],fosm_df.loc[par_name,"prior_stdev"])
-                pr_x,pr_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[par_name,"prior_mean"],fosm_df.loc[par_name,"prior_stdev"])
-                axt.plot(pr_x,pr_y,color="0.5",dashes=(1,1),lw=3,label="FOSM prior")
-                pt_x, pt_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[par_name, "post_mean"],
-                                                                    fosm_df.loc[par_name, "post_stdev"])
-                axt.plot(pt_x, pt_y, color="b", dashes=(1, 1), lw=3,label="FOSM posterior")
-                axt.set_yticks([])
-                ylim = ax.get_ylim()
-                xlim = ax.get_xlim()
-                ax.plot([0,0],[0,0],color="b", dashes=(1, 1), lw=3,label="FOSM posterior")
-                ax.plot([0, 0], [0, 0], color="0.5", dashes=(1, 1), lw=3, label="FOSM prior")
-                ax.set_xlim(xlim)
-                ax.set_ylim(ylim)
+        fig, axes = plt.subplots(pst.npar_adj, pst.npar_adj, figsize=(10, 10))
+        for i in range(pst.npar_adj):
+            ipar_name = par_names[i]
+            for j in range(i+1):
+                ax = axes[i,j]
+                jpar_name = par_names[j]
+                if i != j:
+                    #ax.scatter(pr_pe.loc[:, ipar_name], pr_pe.loc[:, jpar_name], marker=".", c="0.5", label="prior")
+                    ax.scatter(pt_pe.loc[:, ipar_name], pt_pe.loc[:, jpar_name], marker=".", c="b", label="prior")
+                    ax.set_title("FOSM CC: {0:3.1f}".format(glm_post_cc.x[i,j]),loc="left")
+                elif i == j:
 
-            ax.legend(loc="upper right")
-            plt.tight_layout()
-            pdf.savefig()
-            plt.close(fig)
+                    ax.hist(pr_pe.loc[:,ipar_name],bins=bins,alpha=0.5,edgecolor="none",facecolor="0.5",density=True,label="prior")
+                    ax.hist(pt_pe.loc[:, ipar_name], bins=bins, alpha=0.5, edgecolor="none", facecolor="b",density=True,label="posterior")
+                    ax.set_title(ipar_name,loc="left")
+                    if fosm_df is not None:
+                        axt = plt.twinx(ax)
+                        pr_x,pr_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[ipar_name,"prior_mean"],
+                                                                           fosm_df.loc[ipar_name,"prior_stdev"])
+                        axt.plot(pr_x,pr_y,color="0.5",dashes=(1,1),lw=3,label="FOSM prior")
+                        pt_x, pt_y = pyemu.plot_utils.gaussian_distribution(fosm_df.loc[ipar_name, "post_mean"],
+                                                                            fosm_df.loc[ipar_name, "post_stdev"])
+                        axt.plot(pt_x, pt_y, color="b", dashes=(1, 1), lw=3,label="FOSM posterior")
+                        axt.set_yticks([])
+                        ylim = ax.get_ylim()
+                        xlim = ax.get_xlim()
+                        ax.plot([0,0],[0,0],color="b", lw=0.25,label="FOSM posterior")
+                        ax.plot([0, 0], [0, 0], color="0.5", lw=0.25, label="FOSM prior")
+                        ax.set_xlim(xlim)
+                        ax.set_ylim(ylim)
+
+                    #ax.legend(loc="upper right")
+            lim_dict = dict()
+            for i in range(pst.npar_adj):
+                lim_dict[i] = axes[i,i].get_xlim()
+                axes[i,i].set_yticks([])
+
+            for i in range(pst.npar_adj):
+                for j in range(i + 1):
+                    if i == j:
+                        continue
+                    axes[i,j].set_ylim(lim_dict[j])
+                    axes[i,j].set_xlim(lim_dict[i])
+
+            for i in range(pst.npar_adj):
+                for j in range(i+1,pst.npar_adj):
+                    axes[i,j].set_xticks([])
+                    axes[i,j].set_yticks([])
+                    axes[i, j].set_frame_on(False)
+
+
+
+
+        plt.tight_layout()
+        pdf.savefig()
+        plt.close(fig)
 
     obs = pst.observation_data
     
@@ -392,10 +425,10 @@ if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 
     start=time()
-    setup(volcano)
+    #setup(volcano)
     #sensitivity_experiment()
     #run_prior_monte_carlo(volcano,num_reals=500,num_workers=10)
-    run_glm(volcano,noptmax=10,num_reals=0,num_workers=15)
+    #run_glm(volcano,noptmax=10,num_reals=0,num_workers=15)
     #plot_glm_results(volcano,pmc_dir="{0}_pmc_master".format(volcano))
     plot_glue_results(volcano,glm_dir="misti_glm_master")
     end=time()
