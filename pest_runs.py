@@ -421,6 +421,21 @@ def plot_glue_results(case,glm_dir=None):
     #plt.show()
 
 
+
+def start_remote_workers(case, master_ip, num_workers=10):
+    """start workers on a remote machine
+
+    """
+    pst_name = os.path.join(case, case+"_run.pst")
+        
+    assert os.path.exists(pst_name)
+
+    pyemu.os_utils.start_workers(case, "pestpp-ies", pst_name, num_workers=num_workers,
+                                 local=master_ip)
+
+
+
+
 if __name__ == "__main__":
     volcano = "misti" # working directory with volcano data
 

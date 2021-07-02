@@ -194,6 +194,7 @@ class SvdData(object):
         #     self.eigwrite = int(lines[2].strip())
         # except Exception as e:
         #     raise Exception("SvdData.parse_values_from_lines: error parsing" + \
+
         #                     " eigwrite from line {0}: {1} \n".format(lines[2],str(e)))
         self.eigwrite = lines[2].strip()
 
@@ -241,6 +242,7 @@ class ControlData(object):
         counters = ["npar", "nobs", "npargp", "nobsgp", "nprior", "ntplfle", "ninsfle"]
         super(ControlData, self).__setattr__("counters", counters)
         # self.keyword_accessed = ["pestmode","noptmax"]
+        super(ControlData, self).__setattr__("passed_options", {})
 
     def __setattr__(self, key, value):
         if key == "_df":
@@ -290,6 +292,7 @@ class ControlData(object):
                 "value": cast_defaults,
                 "required": required,
                 "format": formats,
+                "passed": False,
             }
         )
 
@@ -317,8 +320,10 @@ class ControlData(object):
             lines ([`str`]): raw ASCII lines from pest control file
 
         """
-
+        self._df.loc[:, "passed"] = False
         if iskeyword:
+            # self._df.loc[:, "passed"] = True
+
             extra = {}
             for line in lines:
                 raw = line.strip().split()
@@ -337,6 +342,7 @@ class ControlData(object):
                         # if a float was expected and int return, not a problem
                         if t == np.int32 and self._df.loc[name, "type"] == np.float64:
                             self._df.loc[name, "value"] = np.float64(v)
+                            self._df.loc[name, "passed"] = True
 
                         # if this is a required input, throw
                         elif self._df.loc[name, "required"]:
@@ -352,6 +358,7 @@ class ControlData(object):
                                     if t == self._df.loc[nname, "type"]:
                                         self._df.loc[nname, "value"] = v
                                         found = True
+                                        self._df.loc[nname, "passed"] = True
                                         break
                             if not found:
                                 warnings.warn(
@@ -365,6 +372,7 @@ class ControlData(object):
 
                     else:
                         self._df.loc[name, "value"] = v
+                        self._df.loc[name, "passed"] = True
             return extra
 
         assert len(lines) == len(
@@ -378,6 +386,7 @@ class ControlData(object):
             names = CONTROL_VARIABLE_LINES[iline].strip().split()
             for name, val in zip(names, vals):
                 v, t, f = self._parse_value(val)
+
                 name = name.replace("[", "").replace("]", "")
 
                 # if the parsed values type isn't right
@@ -386,6 +395,7 @@ class ControlData(object):
                     # if a float was expected and int return, not a problem
                     if t == np.int32 and self._df.loc[name, "type"] == np.float64:
                         self._df.loc[name, "value"] = np.float64(v)
+                        # self._df.loc[name, "passed"] = True
 
                     # if this is a required input, throw
                     elif self._df.loc[name, "required"]:
@@ -401,6 +411,7 @@ class ControlData(object):
                                 if t == self._df.loc[nname, "type"]:
                                     self._df.loc[nname, "value"] = v
                                     found = True
+                                    # self._df.loc[nname, "passed"] = True
                                     break
                         if not found:
                             warnings.warn(
@@ -414,6 +425,8 @@ class ControlData(object):
 
                 else:
                     self._df.loc[name, "value"] = v
+                    # self._df.loc[name, "passed"] = True
+
         return {}
 
     def copy(self):
@@ -429,6 +442,9 @@ class ControlData(object):
             pandas.Series:  formatted_values for the control data entries
 
         """
+        # passed_df = self._df.copy()
+        # blank = passed_df.apply(lambda x: x.type==str and x.passed==False,axis=1)
+        # passed_df.loc[blank,"value"] = ""
         return self._df.apply(lambda x: self.formatters[x["type"]](x["value"]), axis=1)
 
     def write_keyword(self, f):
@@ -446,7 +462,10 @@ class ControlData(object):
         f.write("* control data keyword\n")
         for n, v in zip(self._df.name, self.formatted_values):
             if n not in kw:
-                continue
+                if n not in self._df.index:
+                    continue
+                elif not self._df.loc[n, "passed"]:
+                    continue
             f.write("{0:30} {1}\n".format(n, v))
 
     def write(self, f):
@@ -464,5 +483,9 @@ class ControlData(object):
             [
                 f.write(self.formatted_values[name.replace("[", "").replace("]", "")])
                 for name in line.split()
+                if self._df.loc[name.replace("[", "").replace("]", ""), "passed"]
+                == True
+                or self._df.loc[name.replace("[", "").replace("]", ""), "required"]
+                == True
             ]
             f.write("\n")

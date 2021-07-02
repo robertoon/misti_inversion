@@ -165,7 +165,8 @@ def start_workers(
             This option is usually not needed unless you are one of those crazy people who
             spreads files across countless subdirectories.
         local (`bool`, optional): flag for using "localhost" instead of actual hostname/IP address on
-            worker command line. Default is True
+            worker command line. Default is True.  `local` can also be passed as an `str`, in which
+            case `local` is used as the hostname (for example `local="192.168.10.1"`)
         cleanup (`bool`, optional):  flag to remove worker directories once processes exit. Default is
             True.  Set to False for debugging issues
         master_dir (`str`): name of directory for master instance.  If `master_dir`
@@ -182,14 +183,15 @@ def start_workers(
             process started in it by this function.
 
     Notes:
-        if all workers (and optionally master) exit gracefully, then the worker
-            dirs will be removed unless `cleanup` is False
+        If all workers (and optionally master) exit gracefully, then the worker
+        dirs will be removed unless `cleanup` is False
 
     Example::
 
         # start 10 workers using the directory "template" as the base case and
         # also start a master instance in a directory "master".
-        pyemu.helpers.start_workers("template","pestpp-ies","pest.pst",10,master_dir="master")
+        pyemu.helpers.start_workers("template","pestpp-ies","pest.pst",10,master_dir="master",
+                                    worker_root=".")
 
     """
 
@@ -218,7 +220,9 @@ def start_workers(
     else:
         if not os.path.exists(os.path.join(worker_dir, pst_rel_path)):
             raise Exception("pst_rel_path not found from worker_dir")
-    if local:
+    if isinstance(local, str):
+        hostname = local
+    elif local:
         hostname = "localhost"
     else:
         hostname = socket.gethostname()

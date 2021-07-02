@@ -252,9 +252,9 @@ def setup_mtlist_budget_obs(
 
     Note:
         writes an instruction file and also a _setup_.csv to use when constructing a pest
-            control file
+        control file
 
-        the instruction files are named `out_filename` +".ins"
+        The instruction files are named `out_filename` +".ins"
 
         It is recommended to use the default value for `gw_filename` or `sw_filename`.
 
@@ -334,7 +334,7 @@ def apply_mtlist_budget_obs(
           If the SFT process is not active, this returned value is `None`.
 
     Note:
-        this is the companion function of `gw_utils.setup_mtlist_budget_obs()`.
+        This is the companion function of `gw_utils.setup_mtlist_budget_obs()`.
     """
     try:
         import flopy
@@ -373,6 +373,7 @@ def setup_mflist_budget_obs(
     start_datetime="1-1'1970",
     prefix="",
     save_setup_file=False,
+    specify_times=None,
 ):
     """setup observations of budget volume and flux from modflow list file.
 
@@ -388,6 +389,15 @@ def setup_mflist_budget_obs(
             processing more than one list file as part of the forward run process. Default is ''.
         save_setup_file (`bool`): a flag to save "_setup_"+ `list_filename` +".csv" file that contains useful
             control file information
+        specify_times (`np.ndarray`-like, optional): An array of times to
+             extract from the budget dataframes returned by the flopy
+             MfListBudget(list_filename).get_dataframe() method. This can be
+             useful to ensure consistent observation times for PEST.
+             Array needs to be alignable with index of dataframe
+             return by flopy method, care should be take to ensure that
+             this is the case. If passed will be written to
+             "budget_times.config" file as strings to be read by the companion
+             `apply_mflist_budget_obs()` method at run time.
 
     Returns:
         **pandas.DataFrame**: a dataframe with information for constructing a control file.
@@ -403,7 +413,7 @@ def setup_mflist_budget_obs(
 
     """
     flx, vol = apply_mflist_budget_obs(
-        list_filename, flx_filename, vol_filename, start_datetime
+        list_filename, flx_filename, vol_filename, start_datetime, times=specify_times
     )
     _write_mflist_ins(flx_filename + ".ins", flx, prefix + "flx")
     _write_mflist_ins(vol_filename + ".ins", vol, prefix + "vol")
@@ -420,7 +430,12 @@ def setup_mflist_budget_obs(
     df.loc[:, "obsnme"] = df.index.values
     if save_setup_file:
         df.to_csv("_setup_" + os.path.split(list_filename)[-1] + ".csv", index=False)
-
+    if specify_times is not None:
+        np.savetxt(
+            os.path.join(os.path.dirname(flx_filename), "budget_times.config"),
+            specify_times,
+            fmt="%s",
+        )
     return df
 
 
@@ -429,28 +444,37 @@ def apply_mflist_budget_obs(
     flx_filename="flux.dat",
     vol_filename="vol.dat",
     start_datetime="1-1-1970",
+    times=None,
 ):
-    """process a MODFLOW list file to extract flux and volume water budget entries.
+    """process a MODFLOW list file to extract flux and volume water budget
+       entries.
 
     Args:
          list_filename (`str`): path and name of the existing modflow list file
-         flx_filename (`str`, optional): output filename that will contain the budget flux
-             observations. Default is "flux.dat"
-         vol_filename (`str`, optional): output filename that will contain the budget volume
-             observations.  Default is "vol.dat"
-         start_datetime (`str`, optional): a string that can be parsed into a pandas.TimeStamp.
-             This is used to give budget observations meaningful names.  Default is "1-1-1970".
-         prefix (`str`, optional): a prefix to add to the water budget observations.  Useful if
-             processing more than one list file as part of the forward run process. Default is ''.
-         save_setup_file (`bool`): a flag to save _setup_<list_filename>.csv file that contains useful
-             control file information
+         flx_filename (`str`, optional): output filename that will contain the
+             budget flux observations. Default is "flux.dat"
+         vol_filename (`str`, optional): output filename that will contain the
+             budget volume observations.  Default is "vol.dat"
+         start_datetime (`str`, optional): a string that can be parsed into a
+             pandas.TimeStamp. This is used to give budget observations
+             meaningful names.  Default is "1-1-1970".
+         times (`np.ndarray`-like or `str`, optional): An array of times to
+             extract from the budget dataframes returned by the flopy
+             MfListBudget(list_filename).get_dataframe() method. This can be
+             useful to ensure consistent observation times for PEST.
+             If type `str`, will assume `times=filename` and attempt to read
+             single vector (no header or index) from file, parsing datetime
+             using pandas. Array needs to be alignable with index of dataframe
+             return by flopy method, care should be take to ensure that
+             this is the case. If setup with `setup_mflist_budget_obs()`
+             specifying `specify_times` argument `times` should be set to
+             "budget_times.config".
 
      Note:
-         this is the companion function of `gw_utils.setup_mflist_budget_obs()`.
+         This is the companion function of `gw_utils.setup_mflist_budget_obs()`.
 
      Returns:
          tuple containing
-
 
          - **pandas.DataFrame**: a dataframe with flux budget information
          - **pandas.DataFrame**: a dataframe with cumulative budget information
@@ -462,6 +486,19 @@ def apply_mflist_budget_obs(
         raise Exception("error import flopy: {0}".format(str(e)))
     mlf = flopy.utils.MfListBudget(list_filename)
     flx, vol = mlf.get_dataframes(start_datetime=start_datetime, diff=True)
+    if times is not None:
+        if isinstance(times, str):
+            if vol.index.tzinfo:
+                parse_date = {"t": [0]}
+                names = [None]
+            else:
+                parse_date = False
+                names = ["t"]
+            times = pd.read_csv(
+                times, header=None, names=names, parse_dates=parse_date
+            )["t"].values
+        flx = flx.loc[times]
+        vol = vol.loc[times]
     flx.to_csv(flx_filename, sep=" ", index_label="datetime", date_format="%Y%m%d")
     vol.to_csv(vol_filename, sep=" ", index_label="datetime", date_format="%Y%m%d")
     return flx, vol
@@ -526,13 +563,12 @@ def setup_hds_timeseries(
         - **pandas.DataFrame**: a dataframe of observation information for use in the pest control file
 
     Note:
-
         This function writes hds_timeseries.config that must be in the same
         dir where `apply_hds_timeseries()` is called during the forward run
 
         Assumes model time units are days
 
-        this is the companion function of `gw_utils.apply_hds_timeseries()`.
+        This is the companion function of `gw_utils.apply_hds_timeseries()`.
 
     """
 
@@ -581,12 +617,12 @@ def setup_hds_timeseries(
                 )
     elif bin_file.lower().endswith(".ucn"):
         try:
-            bf = flopy.utils.UcnFile(bin_file)
+            bf = flopy.utils.UcnFile(bin_file, precision=precision)
         except Exception as e:
             raise Exception("error instantiating UcnFile:{0}".format(str(e)))
     else:
         try:
-            bf = flopy.utils.HeadFile(bin_file)
+            bf = flopy.utils.HeadFile(bin_file, precision=precision)
         except Exception as e:
             raise Exception("error instantiating HeadFile:{0}".format(str(e)))
 
@@ -717,7 +753,7 @@ def apply_hds_timeseries(config_file=None, postprocess_inact=None):
             inactive value processing happens.  Default is `None`.
 
     Note:
-        this is the companion function of `gw_utils.setup_hds_timeseries()`.
+        This is the companion function of `gw_utils.setup_hds_timeseries()`.
 
     """
     import flopy
@@ -821,6 +857,7 @@ def _setup_postprocess_hds_timeseries(
     hds_file, df, config_file, prefix=None, model=None
 ):
     """Dirty function to setup post processing concentrations in inactive/dry cells"""
+
     warnings.warn(
         "Setting up post processing of hds or ucn timeseries obs. "
         "Prepending 'pp' to obs name may cause length to exceed 20 chars",
@@ -987,7 +1024,6 @@ def setup_hds_obs(
 
         This is the companion function to `gw_utils.apply_hds_obs()`.
 
-
     """
     try:
         import flopy
@@ -1001,6 +1037,11 @@ def setup_hds_obs(
             hds = flopy.utils.UcnFile(hds_file)
         except Exception as e:
             raise Exception("error instantiating UcnFile:{0}".format(str(e)))
+    elif text.lower() == "headu":
+        try:
+            hds = flopy.utils.HeadUFile(hds_file, text=text, precision=precision)
+        except Exception as e:
+            raise Exception("error instantiating HeadFile:{0}".format(str(e)))
     else:
         try:
             hds = flopy.utils.HeadFile(hds_file, text=text, precision=precision)
@@ -1028,7 +1069,7 @@ def setup_hds_obs(
         assert kper in kpers, "kper not in hds:{0}".format(kper)
         assert k in range(hds.nlay), "k not in hds:{0}".format(k)
         kstp = last_kstp_from_kper(hds, kper)
-        d = hds.get_data(kstpkper=(kstp, kper))[k, :, :]
+        d = hds.get_data(kstpkper=(kstp, kper))[k]
 
         data["{0}_{1}".format(kper, k)] = d.flatten()
         # data[(kper,k)] = d.flatten()
@@ -1141,7 +1182,6 @@ def last_kstp_from_kper(hds, kper):
 
     Args:
         hds (`flopy.utils.HeadFile`): head save file
-
         kper (`int`): the zero-index stress period number
 
     Returns:
@@ -1197,6 +1237,8 @@ def apply_hds_obs(hds_file, inact_abs_val=1.0e20, precision="single", text="head
 
     if hds_file.lower().endswith("ucn"):
         hds = flopy.utils.UcnFile(hds_file)
+    elif text.lower() == "headu":
+        hds = flopy.utils.HeadUFile(hds_file)
     else:
         hds = flopy.utils.HeadFile(hds_file, precision=precision, text=text)
     kpers = df.kper.unique()
@@ -1206,11 +1248,22 @@ def apply_hds_obs(hds_file, inact_abs_val=1.0e20, precision="single", text="head
         data = hds.get_data(kstpkper=(kstp, kper))
         # jwhite 15jan2018 fix for really large values that are getting some
         # trash added to them...
-        data[np.isnan(data)] = 0.0
-        data[data > np.abs(inact_abs_val)] = np.abs(inact_abs_val)
-        data[data < -np.abs(inact_abs_val)] = -np.abs(inact_abs_val)
-        df_kper = df.loc[df.kper == kper, :]
-        df.loc[df_kper.index, "obsval"] = data[df_kper.k, df_kper.i, df_kper.j]
+        if text.lower() != "headu":
+            data[np.isnan(data)] = 0.0
+            data[data > np.abs(inact_abs_val)] = np.abs(inact_abs_val)
+            data[data < -np.abs(inact_abs_val)] = -np.abs(inact_abs_val)
+            df_kper = df.loc[df.kper == kper, :]
+            df.loc[df_kper.index, "obsval"] = data[df_kper.k, df_kper.i, df_kper.j]
+        else:
+
+            df_kper = df.loc[df.kper == kper, :]
+            for k, d in enumerate(data):
+                d[np.isnan(d)] = 0.0
+                d[d > np.abs(inact_abs_val)] = np.abs(inact_abs_val)
+                d[d < -np.abs(inact_abs_val)] = -np.abs(inact_abs_val)
+                df_kperk = df_kper.loc[df_kper.k == k, :]
+                df.loc[df_kperk.index, "obsval"] = d[df_kperk.i]
+
     assert df.dropna().shape[0] == df.shape[0]
     df.loc[:, ["obsnme", "obsval"]].to_csv(out_file, index=False, sep=" ")
     return df
@@ -1231,12 +1284,12 @@ def setup_sft_obs(sft_file, ins_file=None, start_datetime=None, times=None, ncom
             found in the file are used. Default is None.
         ncomp (`int`): number of components in transport model. Default is 1.
 
-    Note:
-        this is the companion function to `gw_utils.apply_sft_obs()`.
-
     Returns:
         **pandas.DataFrame**: a dataframe with observation names and values for the sft simulated
         concentrations.
+
+    Note:
+        This is the companion function to `gw_utils.apply_sft_obs()`.
 
     """
 
@@ -1314,7 +1367,7 @@ def apply_sft_obs():
         **pandas.DataFrame**: a dataframe of extracted simulated outputs
 
     Note:
-        this is the companion function to `gw_utils.setup_sft_obs()`.
+        This is the companion function to `gw_utils.setup_sft_obs()`.
 
     """
     # this is for dealing with the missing 'e' problem
@@ -1368,16 +1421,14 @@ def setup_sfr_seg_parameters(
         **pandas.DataFrame**: a dataframe with useful parameter setup information
 
     Note:
-         This function handles the standard input case, not all the cryptic SFR options.  Loads the
-            dis, bas, and sfr files with flopy using model_ws.
+        This function handles the standard input case, not all the cryptic SFR options.  Loads the
+        dis, bas, and sfr files with flopy using model_ws.
 
         This is the companion function to `gw_utils.apply_sfr_seg_parameters()` .
-
         The number (and numbering) of segment data entries must consistent across
-            all stress periods.
+        all stress periods.
 
         Writes `nam_file` +"_backup_.sfr" as the backup of the original sfr file
-
         Skips values = 0.0 since multipliers don't work for these
 
     """
@@ -1616,10 +1667,9 @@ def setup_sfr_reach_parameters(nam_file, model_ws=".", par_cols=["strhc1"]):
         Similar to `gw_utils.setup_sfr_seg_parameters()`, method will apply params to sfr reachdata
 
         Can load the dis, bas, and sfr files with flopy using model_ws. Or can pass a model object
-            (SFR loading can be slow)
+        (SFR loading can be slow)
 
         This is the companion function of `gw_utils.apply_sfr_reach_parameters()`
-
         Skips values = 0.0 since multipliers don't work for these
 
     """
@@ -1743,9 +1793,9 @@ def apply_sfr_seg_parameters(seg_pars=True, reach_pars=False):
         **flopy.modflow.ModflowSfr**: the modified SFR package instance
 
     Note:
-        expects "sfr_seg_pars.config" to exist
+        Expects "sfr_seg_pars.config" to exist
 
-        expects `nam_file` +"_backup_.sfr" to exist
+        Expects `nam_file` +"_backup_.sfr" to exist
 
 
 
@@ -1840,9 +1890,9 @@ def apply_sfr_parameters(seg_pars=True, reach_pars=False):
         **flopy.modflow.ModflowSfr**: the modified SFR package instance
 
     Note:
-        expects "sfr_seg_pars.config" to exist
+        Expects "sfr_seg_pars.config" to exist
 
-        expects `nam_file` +"_backup_.sfr" to exist
+        Expects `nam_file` +"_backup_.sfr" to exist
 
 
     """
@@ -1978,15 +2028,18 @@ def setup_sfr_obs(
 def apply_sfr_obs():
     """apply the sfr observation process
 
-    Note:
-        This is the companion function of `gw_utils.setup_sfr_obs()`.
-
-        requires `sfr_obs.config`.
-
-        Writes `sfr_out_file`+".processed", where `sfr_out_file` is defined in "sfr_obs.config"
+    Args:
+        None
 
     Returns:
         **pandas.DataFrame**: a dataframe of aggregrated sfr segment aquifer and outflow
+
+    Note:
+        This is the companion function of `gw_utils.setup_sfr_obs()`.
+
+        Requires `sfr_obs.config`.
+
+        Writes `sfr_out_file`+".processed", where `sfr_out_file` is defined in "sfr_obs.config"
     """
     assert os.path.exists("sfr_obs.config")
     df_key = pd.read_csv("sfr_obs.config", index_col=0)
@@ -2025,12 +2078,12 @@ def load_sfr_out(sfr_out_file, selection=None):
         selection (`pandas.DataFrame`): a dataframe of `reach` and `segment` pairs to
             load.  If `None`, all reach-segment pairs are loaded.  Default is `None`.
 
-    Note:
-        aggregates flow to aquifer for segments and returns and flow out at
-        downstream end of segment.
-
     Returns:
         **dict**: dictionary of {kper:`pandas.DataFrame`} of SFR output.
+
+    Note:
+        Aggregates flow to aquifer for segments and returns and flow out at
+        downstream end of segment.
 
     """
     assert os.path.exists(sfr_out_file), "couldn't find sfr out file {0}".format(
@@ -2301,6 +2354,9 @@ def setup_sfr_reach_obs(
 def apply_sfr_reach_obs():
     """apply the sfr reach observation process.
 
+    Returns:
+        `pd.DataFrame`: a dataframe of sfr aquifer and outflow ad segment,reach locations
+
     Note:
         This is the companion function of `gw_utils.setup_sfr_reach_obs()`.
 
@@ -2308,9 +2364,6 @@ def apply_sfr_reach_obs():
 
         Writes <sfr_out_file>.processed, where <sfr_out_file> is defined in
         "sfr_reach_obs.config"
-
-    Returns:
-        `pd.DataFrame`: a dataframe of sfr aquifer and outflow ad segment,reach locations
 
     """
     assert os.path.exists("sfr_reach_obs.config")
@@ -2363,7 +2416,7 @@ def modflow_sfr_gag_to_instruction_file(
         - **str**: file name of processed gage output for all times
 
     Note:
-        sets up observations for gage outputs only for the Flow column.
+        Sets up observations for gage outputs only for the Flow column.
 
         If `parse_namefile` is true, only text up to first '.' is used as the gage_num
 
@@ -2439,7 +2492,7 @@ def setup_gage_obs(gage_file, ins_file=None, start_datetime=None, times=None):
 
 
     Note:
-         setups up observations for gage outputs (all columns).
+         Setups up observations for gage outputs (all columns).
 
          This is the companion function of `gw_utils.apply_gage_obs()`
     """
@@ -2801,3 +2854,101 @@ def write_hfb_template(m):
     df.loc[:, "parubnd"] = df.parval1.max() * 10.0
     df.loc[:, "parlbnd"] = df.parval1.min() * 0.1
     return tpl_file, df
+
+
+class GsfReader:
+    """
+    a helper class to read a standard modflow-usg gsf file
+
+    Args:
+        gsffilename (`str`): filename
+
+
+
+    """
+
+    def __init__(self, gsffilename):
+
+        with open(gsffilename, "r") as f:
+            self.read_data = f.readlines()
+
+        self.nnode, self.nlay, self.iz, self.ic = [
+            int(n) for n in self.read_data[1].split()
+        ]
+
+        self.nvertex = int(self.read_data[2])
+
+    def get_vertex_coordinates(self):
+        """
+
+
+        Returns:
+            Dictionary containing list of x, y and z coordinates for each vertex
+        """
+        # vdata = self.read_data[3:self.nvertex+3]
+        vertex_coords = {}
+        for vert in range(self.nvertex):
+            x, y, z = self.read_data[3 + vert].split()
+            vertex_coords[vert + 1] = [float(x), float(y), float(z)]
+        return vertex_coords
+
+    def get_node_data(self):
+        """
+
+        Returns:
+            nodedf: a pd.DataFrame containing Node information; Node, X, Y, Z, layer, numverts, vertidx
+
+        """
+
+        node_data = []
+        for node in range(self.nnode):
+            nid, x, y, z, lay, numverts = self.read_data[
+                self.nvertex + 3 + node
+            ].split()[:6]
+
+            # vertidx = {'ivertex': [int(n) for n in self.read_data[self.nvertex+3 + node].split()[6:]]}
+            vertidx = [
+                int(n) for n in self.read_data[self.nvertex + 3 + node].split()[6:]
+            ]
+
+            node_data.append(
+                [
+                    int(nid),
+                    float(x),
+                    float(y),
+                    float(z),
+                    int(lay),
+                    int(numverts),
+                    vertidx,
+                ]
+            )
+
+        nodedf = pd.DataFrame(
+            node_data, columns=["node", "x", "y", "z", "layer", "numverts", "vertidx"]
+        )
+        return nodedf
+
+    def get_node_coordinates(self, zcoord=False, zero_based=False):
+        """
+        Args:
+            zcoord (`bool`): flag to add z coord to coordinates.  Default is False
+            zero_based (`bool`): flag to subtract one from the node numbers in the returned
+                node_coords dict.  This is needed to support PstFrom.  Default is False
+
+
+        Returns:
+            node_coords: Dictionary containing x and y coordinates for each node
+        """
+        node_coords = {}
+        for node in range(self.nnode):
+            nid, x, y, z, lay, numverts = self.read_data[
+                self.nvertex + 3 + node
+            ].split()[:6]
+            nid = int(nid)
+            if zero_based:
+                nid -= 1
+            node_coords[nid] = [float(x), float(y)]
+            if zcoord:
+                node_coords[nid] += [float(z)]
+
+        return node_coords

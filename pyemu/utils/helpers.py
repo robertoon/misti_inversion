@@ -21,6 +21,7 @@ import pandas as pd
 pd.options.display.max_colwidth = 100
 from ..pyemu_warnings import PyemuWarning
 
+
 try:
     import flopy
 except:
@@ -55,14 +56,14 @@ def geostatistical_draws(
             Default is True.
 
     Returns
-        `pyemu.ParameterEnsemble`: the realized parameter ensemble.
+        **pyemu.ParameterEnsemble**: the realized parameter ensemble.
 
     Note:
-        parameters are realized by parameter group.  The variance of each
-        parameter group is used to scale the resulting geostatistical
+        Parameters are realized by parameter group.
+
+        The variance of each parameter is used to scale the resulting geostatistical
         covariance matrix Therefore, the sill of the geostatistical structures
         in `struct_dict` should be 1.0
-
 
     Example::
 
@@ -168,19 +169,22 @@ def geostatistical_draws(
 
                 if verbose:
                     print("getting diag var cov", df_zone.shape[0])
-                # tpl_var = np.diag(full_cov.get(list(df_zone.parnme)).x).max()
-                tpl_var = max([full_cov_dict[pn] for pn in df_zone.parnme])
 
+                # tpl_var = max([full_cov_dict[pn] for pn in df_zone.parnme])
                 if verbose:
                     print("scaling full cov by diag var cov")
-                # cov.x *= tpl_var
-                for i in range(cov.shape[0]):
-                    cov.x[i, :] *= tpl_var
+
+                # for i in range(cov.shape[0]):
+                #     cov.x[i, :] *= tpl_var
+                for i, name in enumerate(cov.row_names):
+                    # print(name,full_cov_dict[name])
+                    cov.x[:, i] *= np.sqrt(full_cov_dict[name])
+                    cov.x[i, :] *= np.sqrt(full_cov_dict[name])
+                    cov.x[i, i] = full_cov_dict[name]
                 # no fixed values here
                 pe = pyemu.ParameterEnsemble.from_gaussian_draw(
                     pst=pst, cov=cov, num_reals=num_reals, by_groups=False, fill=False
                 )
-                # df = pe.iloc[:,:]
                 par_ens.append(pe._df)
                 pars_in_cov.update(set(pe.columns))
 
@@ -213,7 +217,7 @@ def geostatistical_prior_builder(
         pst (`pyemu.Pst`): a control file instance (or the name of control file)
         struct_dict (`dict`): a dict of GeoStruct (or structure file), and list of
             pilot point template files pairs. If the values in the dict are
-            `pd.DataFrames`, then they must have an 'x','y', and 'parnme' column.
+            `pd.DataFrame` instances, then they must have an 'x','y', and 'parnme' column.
             If the filename ends in '.csv', then a pd.DataFrame is loaded,
             otherwise a pilot points file is loaded.
         sigma_range (`float`): a float representing the number of standard deviations
@@ -225,21 +229,26 @@ def geostatistical_prior_builder(
             is False
 
     Returns:
-        `pyemu.Cov`: a covariance matrix that includes all adjustable parameters in the control
+        **pyemu.Cov**: a covariance matrix that includes all adjustable parameters in the control
         file.
 
     Note:
         The covariance of parameters associated with geostatistical structures is defined
         as a mixture of GeoStruct and bounds.  That is, the GeoStruct is used to construct a
-        pyemu.Cov, then the entire pyemu.Cov is scaled by the uncertainty implied by the bounds and
+        pyemu.Cov, then the rows and columns of the pyemu.Cov block are scaled by the uncertainty implied by the bounds and
         sigma_range. Most users will want to sill of the geostruct to sum to 1.0 so that the resulting
         covariance matrices have variance proportional to the parameter bounds. Sounds complicated...
+
+        If the number of parameters exceeds about 20,000 this function may use all available memory
+        then crash your computer.  In these high-dimensional cases, you probably dont need the prior
+        covariance matrix itself, but rather an ensemble of paraaeter realizations.  In this case,
+        please use the `geostatistical_draws()` function.
 
     Example::
 
         pst = pyemu.Pst("my.pst")
         sd = {"struct.dat":["hkpp.dat.tpl","vka.dat.tpl"]}
-        cov = pyemu.helpers.geostatistical_draws(pst,struct_dict=sd}
+        cov = pyemu.helpers.geostatistical_prior_builder(pst,struct_dict=sd}
         cov.to_binary("prior.jcb")
 
     """
@@ -321,15 +330,17 @@ def geostatistical_prior_builder(
                 # find the variance in the diagonal cov
                 if verbose:
                     print("getting diag var cov", df_zone.shape[0])
-                # tpl_var = np.diag(full_cov.get(list(df_zone.parnme)).x).max()
-                tpl_var = max([full_cov_dict[pn] for pn in df_zone.parnme])
-                # if np.std(tpl_var) > 1.0e-6:
-                #    warnings.warn("pars have different ranges" +\
-                #                  " , using max range as variance for all pars")
-                # tpl_var = tpl_var.max()
+
+                # tpl_var = max([full_cov_dict[pn] for pn in df_zone.parnme])
+
                 if verbose:
                     print("scaling full cov by diag var cov")
-                cov *= tpl_var
+
+                # cov *= tpl_var
+                for i, name in enumerate(cov.row_names):
+                    cov.x[:, i] *= np.sqrt(full_cov_dict[name])
+                    cov.x[i, :] *= np.sqrt(full_cov_dict[name])
+                    cov.x[i, i] = full_cov_dict[name]
                 if verbose:
                     print("test for inversion")
                 try:
@@ -356,7 +367,8 @@ def _rmse(v1, v2):
         v2 (iterable): another vector
 
     Returns:
-        scalar: root mean squared error of v1,v2
+        **float**: root mean squared error of v1,v2
+
     """
 
     return np.sqrt(np.mean(np.square(v1 - v2)))
@@ -379,10 +391,12 @@ def calc_observation_ensemble_quantiles(
         subset_obsgroups (iterable): list of observation groups to include in calculations
 
     Returns:
-        ens (pandas DataFrame): same ens object that was input but with quantile realizations
-                            appended as new rows labelled with 'q_#' where '#' is the slected quantile
-        quantile_idx (dictionary): dictionary with keys being quantiles and values being realizations
-                                corresponding to each realization
+        tuple containing
+
+        - **pandas DataFrame**: same ens object that was input but with quantile realizations
+                                appended as new rows labelled with 'q_#' where '#' is the slected quantile
+        - **dict**: dictionary with keys being quantiles and values being realizations
+                    corresponding to each realization
     """
     # TODO: handle zero weights due to PDC
 
@@ -462,7 +476,9 @@ def calc_observation_ensemble_quantiles(
 
 
 def calc_rmse_ensemble(ens, pst, bygroups=True, subset_realizations=None):
-    """Calculates RMSE (without weights) to quantify fit to observations for ensemble members
+    """
+    DEPRECATED -->please see pyemu.utils.metrics.calc_metric_ensemble() 
+    Calculates RMSE (without weights) to quantify fit to observations for ensemble members
 
     Args:
         ens (pandas DataFrame): DataFrame read from an observation
@@ -472,81 +488,57 @@ def calc_rmse_ensemble(ens, pst, bygroups=True, subset_realizations=None):
                 to report RMSE. Defaults to None which returns all realizations.
 
     Returns:
-        rmse (pandas DataFrame object): rows are realizations. Columns are groups. Content is RMSE
+        **pandas.DataFrame**: rows are realizations. Columns are groups. Content is RMSE
     """
 
-    # TODO: handle zero weights due to PDC
-
-    # make sure subset_realizations is a list
-    if not isinstance(subset_realizations, list) and subset_realizations is not None:
-        subset_realizations = list(subset_realizations)
-
-    if "real_name" in ens.columns:
-        ens.set_index("real_name")
-    if not isinstance(pst, pyemu.Pst):
-        raise Exception("pst object must be of type pyemu.Pst")
-
-    # get the observation data
-    obs = pst.observation_data.copy()
-
-    # confirm that the indices and observations line up
-    if False in np.unique(ens.columns == obs.index):
-        raise Exception("ens and pst observation names do not align")
-
-    rmse = pd.DataFrame(index=ens.index)
-    if subset_realizations is not None:
-        rmse = rmse.loc[subset_realizations]
-
-    # calculate the rmse total first
-    rmse["total"] = [_rmse(ens.loc[i], obs.obsval) for i in rmse.index]
-
-    # if bygroups, do the groups as columns
-    if bygroups is True:
-        for cg in obs.obgnme.unique():
-            cnames = obs.loc[obs.obgnme == cg].obsnme
-            rmse[cg] = [
-                _rmse(ens.loc[i][cnames], obs.loc[cnames].obsval) for i in rmse.index
-            ]
-    return rmse
+    raise Exception('this is deprecated-->please see pyemu.utils.metrics.calc_metric_ensemble()')
 
 
-def _condition_on_par_knowledge(cov, par_knowledge_dict):
-    """experimental function to include conditional prior information
-    for one or more parameters in a full covariance matrix
+def _condition_on_par_knowledge(cov, var_knowledge_dict):
+    """experimental function to condition a covariance matrix with the variances of new information.
+
+    Args:
+        cov (`pyemu.Cov`): prior covariance matrix
+        var_knowledge_dict (`dict`): a dictionary of covariance entries and variances
+
+    Returns:
+        **pyemu.Cov**: the conditional covariance matrix
+
     """
 
     missing = []
-    for parnme in par_knowledge_dict.keys():
-        if parnme not in cov.row_names:
-            missing.append(parnme)
+    for name in var_knowledge_dict.keys():
+        if name not in cov.row_names:
+            missing.append(name)
     if len(missing):
         raise Exception(
-            "par knowledge dict parameters not found: {0}".format(",".join(missing))
+            "var knowledge dict entries not found: {0}".format(",".join(missing))
         )
-    # build the selection matrix and sigma epsilon
-    # sel = pyemu.Cov(x=np.identity(cov.shape[0]),names=cov.row_names)
-    sel = cov.zero2d
-    sel = cov.to_pearson()
-    new_cov_diag = pyemu.Cov(x=np.diag(cov.as_2d.diagonal()), names=cov.row_names)
-    # new_cov_diag = cov.zero2d
+    if cov.isdiagonal:
+        raise Exception(
+            "_condition_on_par_knowledge(): cov is diagonal, simply update the par variances"
+        )
+    know_names = list(var_knowledge_dict.keys())
+    know_names.sort()
+    know_cross_cov = cov.get(cov.row_names, know_names)
 
-    for parnme, var in par_knowledge_dict.items():
-        idx = cov.row_names.index(parnme)
-        # sel.x[idx,:] = 1.0
-        # sel.x[idx,idx] = var
-        new_cov_diag.x[idx, idx] = var  # cov.x[idx,idx]
-    new_cov_diag = sel * new_cov_diag * sel.T
+    know_cov = cov.get(know_names, know_names)
+    # add the par knowledge to the diagonal of know_cov
+    for i, name in enumerate(know_names):
+        know_cov.x[i, i] += var_knowledge_dict[name]
 
-    for _ in range(2):
-        for parnme, var in par_knowledge_dict.items():
-            idx = cov.row_names.index(parnme)
-            # sel.x[idx,:] = 1.0
-            # sel.x[idx,idx] = var
-            new_cov_diag.x[idx, idx] = var  # cov.x[idx,idx]
-        new_cov_diag = sel * new_cov_diag * sel.T
+    # kalman gain
+    k_gain = know_cross_cov * know_cov.inv
+    # selection matrix
+    h = k_gain.zero2d.T
+    know_dict = {n: i for i, n in enumerate(know_names)}
+    for i, name in enumerate(cov.row_names):
+        if name in know_dict:
+            h.x[know_dict[name], i] = 1.0
 
-    print(new_cov_diag)
-    return new_cov_diag
+    prod = k_gain * h
+    conditional_cov = (prod.identity - prod) * cov
+    return conditional_cov
 
 
 def kl_setup(
@@ -581,7 +573,7 @@ def kl_setup(
             template files to.  Default is "." (current directory).
 
     Returns:
-        `pandas.DataFrame`: a dataframe of parameter information.
+        **pandas.DataFrame**: a dataframe of parameter information.
 
     Note:
         This is the companion function to `helpers.apply_kl()`
@@ -598,7 +590,7 @@ def kl_setup(
         import flopy
     except Exception as e:
         raise Exception("error import flopy: {0}".format(str(e)))
-    assert isinstance(sr, flopy.utils.SpatialReference)
+    assert isinstance(sr, pyemu.helpers.SpatialReference)
     # for name,array in array_dict.items():
     #     assert isinstance(array,np.ndarray)
     #     assert array.shape[0] == sr.nrow
@@ -753,6 +745,10 @@ def zero_order_tikhonov(pst, parbounds=True, par_groups=None, reset=True):
         reset (`bool`): a flag to remove any existing prior information equations
             in the control file.  Default is True
 
+    Note:
+        Operates in place.
+
+
     Example::
 
         pst = pyemu.Pst("my.pst")
@@ -804,6 +800,9 @@ def _regweight_from_parbound(pst):
     which approximates the KL expansion.  Called by
     zero_order_tikhonov().
 
+    Args:
+        pst (`pyemu.Pst`): control file
+
     """
 
     pst.parameter_data.index = pst.parameter_data.parnme
@@ -843,6 +842,8 @@ def first_order_pearson_tikhonov(pst, cov, reset=True, abs_drop_tol=1.0e-3):
     Note:
         The weights on the prior information equations are the Pearson
         correlation coefficients implied by covariance matrix.
+
+        Operates in place
 
     Example::
 
@@ -908,7 +909,7 @@ def simple_tpl_from_pars(parnames, tplfilename="model.input.tpl"):
             is "model.input.tpl"
 
     Note:
-        writes a file `tplfilename` with each parameter name in `parnames` on a line
+        Writes a file `tplfilename` with each parameter name in `parnames` on a line
 
     """
     with open(tplfilename, "w") as ofp:
@@ -930,6 +931,7 @@ def simple_ins_from_obs(obsnames, insfilename="model.output.ins"):
         writes a file `insfilename` with each observation read off
         of a single line
 
+
     """
     with open(insfilename, "w") as ofp:
         ofp.write("pif ~\n")
@@ -950,6 +952,13 @@ def pst_from_parnames_obsnames(
     Returns:
         `pyemu.Pst`: the generic control file
 
+    Example::
+
+        parnames = ["p1","p2"]
+        obsnames = ["o1","o2"]
+        pst = pyemu.helpers.pst_from_parnames_obsnames(parname,obsnames)
+
+
     """
     simple_tpl_from_pars(parnames, tplfilename)
     simple_ins_from_obs(obsnames, insfilename)
@@ -964,7 +973,7 @@ def pst_from_parnames_obsnames(
 
 def read_pestpp_runstorage(filename, irun=0, with_metadata=False):
     """read pars and obs from a specific run in a pest++ serialized
-    run storage file into dataframes.
+    run storage file (e.g. .rns/.rnj) into dataframes.
 
     Args:
         filename (`str`): the name of the run storage file
@@ -978,6 +987,11 @@ def read_pestpp_runstorage(filename, irun=0, with_metadata=False):
         - **pandas.DataFrame**: parameter information
         - **pandas.DataFrame**: observation information
         - **pandas.DataFrame**: optionally run status and info txt.
+
+    Note:
+
+        This function can save you heaps of misery of your pest++ run
+        died before writing output files...
 
     """
 
@@ -1164,12 +1178,6 @@ def parse_dir_for_io_files(d, prepend_path=False):
         prepend_path (`bool`, optional): flag to prepend `d` to each file name.
             Default is False
 
-    Note:
-        the return values from this function can be passed straight to
-        `pyemu.Pst.from_io_files()` classmethod constructor. Assumes the
-        template file names are <input_file>.tpl and instruction file names
-        are <output_file>.ins.
-
     Returns:
         tuple containing
 
@@ -1177,6 +1185,19 @@ def parse_dir_for_io_files(d, prepend_path=False):
         - **[`str`]**: list of input files in d
         - **[`str`]**: list of instruction files in d
         - **[`str`]**: list of output files in d
+
+    Note:
+        the return values from this function can be passed straight to
+        `pyemu.Pst.from_io_files()` classmethod constructor.
+
+        Assumes the template file names are <input_file>.tpl and instruction file names
+        are <output_file>.ins.
+
+    Example::
+
+        files = pyemu.helpers.parse_dir_for_io_files("template",prepend_path=True)
+        pst = pyemu.Pst.from_io_files(*files,pst_path=".")
+
 
     """
 
@@ -1485,8 +1506,8 @@ class PstFromFlopyModel(object):
         bounds, writes a forward_run.py script with all the calls need to
         implement multiplier parameters, run MODFLOW and post-process.
 
-        Works a lot better if TEMPCHEK, INSCHEK and PESTCHEK are available in the
-        system path variable
+        While this class does work, the newer `PstFrom` class is a more pythonic
+        implementation
 
     """
 
@@ -2343,6 +2364,10 @@ class PstFromFlopyModel(object):
             pp_file = pp_files.iloc[0]
             mlt_df.loc[mlt_df.mlt_file == out_file, "fac_file"] = fac_file
             mlt_df.loc[mlt_df.mlt_file == out_file, "pp_file"] = pp_file
+            mlt_df.loc[mlt_df.mlt_file == out_file, "pp_fill_value"] = 1.0
+            mlt_df.loc[mlt_df.mlt_file == out_file, "pp_lower_limit"] = 1.0e-10
+            mlt_df.loc[mlt_df.mlt_file == out_file, "pp_upper_limit"] = 1.0e10
+
         self.par_dfs[self.pp_suffix] = pp_df
 
         mlt_df.loc[mlt_df.suffix == self.pp_suffix, "tpl_file"] = np.NaN
@@ -2408,6 +2433,9 @@ class PstFromFlopyModel(object):
             mlt_df.loc[mlt_df.prefix == prefix, "fac_file"] = os.path.split(fac_file)[
                 -1
             ]
+            mlt_df.loc[mlt_df.prefix == prefix, "pp_fill_value"] = 1.0
+            mlt_df.loc[mlt_df.prefix == prefix, "pp_lower_limit"] = 1.0e-10
+            mlt_df.loc[mlt_df.prefix == prefix, "pp_upper_limit"] = 1.0e10
 
         print(kl_mlt_df)
         mlt_df.loc[mlt_df.suffix == self.kl_suffix, "tpl_file"] = np.NaN
@@ -3577,7 +3605,8 @@ def apply_list_and_array_pars(arr_par_file="mult2model_info.csv", chunk_len=50):
         Used to implement the parameterization constructed by
         PstFrom during a forward run
 
-        Should be added to the forward_run.py script
+        Should be added to the forward_run.py script; added programmatically
+        by `PstFrom.build_pst()`
     """
     df = pd.read_csv(arr_par_file, index_col=0)
     arr_pars = df.loc[df.index_cols.isna()].copy()
@@ -3588,7 +3617,7 @@ def apply_list_and_array_pars(arr_par_file="mult2model_info.csv", chunk_len=50):
     list_pars["lower_bound"] = list_pars.lower_bound.apply(lambda x: literal_eval(x))
     list_pars["upper_bound"] = list_pars.upper_bound.apply(lambda x: literal_eval(x))
     # TODO check use_cols is always present
-    apply_genericlist_pars(list_pars)
+    apply_genericlist_pars(list_pars, chunk_len=chunk_len)
     apply_array_pars(arr_pars, chunk_len=chunk_len)
 
 
@@ -3598,13 +3627,13 @@ def _process_chunk_fac2real(chunk, i):
     print("process", i, " processed ", len(chunk), "fac2real calls")
 
 
-def _process_chunk_model_files(chunk, i, df):
+def _process_chunk_array_files(chunk, i, df):
     for model_file in chunk:
-        _process_model_file(model_file, df)
-    print("process", i, " processed ", len(chunk), "process_model_file calls")
+        _process_array_file(model_file, df)
+    print("process", i, " processed ", len(chunk), "process_array_file calls")
 
 
-def _process_model_file(model_file, df):
+def _process_array_file(model_file, df):
     # find all mults that need to be applied to this array
     df_mf = df.loc[df.model_file == model_file, :]
     results = []
@@ -3613,36 +3642,37 @@ def _process_model_file(model_file, df):
         raise Exception("wrong number of org_files for {0}".format(model_file))
     org_arr = np.loadtxt(org_file[0])
 
-    for mlt in df_mf.mlt_file:
-        if pd.isna(mlt):
-            continue
-        mlt_data = np.loadtxt(mlt)
-        if org_arr.shape != mlt_data.shape:
-            raise Exception(
-                "shape of org file {}:{} differs from mlt file {}:{}".format(
-                    org_file, org_arr.shape, mlt, mlt_data.shape
+    if "mlt_file" in df_mf.columns:
+        for mlt in df_mf.mlt_file:
+            if pd.isna(mlt):
+                continue
+            mlt_data = np.loadtxt(mlt)
+            if org_arr.shape != mlt_data.shape:
+                raise Exception(
+                    "shape of org file {}:{} differs from mlt file {}:{}".format(
+                        org_file, org_arr.shape, mlt, mlt_data.shape
+                    )
                 )
-            )
-        org_arr *= np.loadtxt(mlt)
-    if "upper_bound" in df.columns:
-        ub_vals = df_mf.upper_bound.value_counts().dropna().to_dict()
-        if len(ub_vals) == 0:
-            pass
-        elif len(ub_vals) > 1:
-            print(ub_vals)
-            raise Exception("different upper bound values for {0}".format(org_file))
-        else:
-            ub = float(list(ub_vals.keys())[0])
-            org_arr[org_arr > ub] = ub
-    if "lower_bound" in df.columns:
-        lb_vals = df_mf.lower_bound.value_counts().dropna().to_dict()
-        if len(lb_vals) == 0:
-            pass
-        elif len(lb_vals) > 1:
-            raise Exception("different lower bound values for {0}".format(org_file))
-        else:
-            lb = float(list(lb_vals.keys())[0])
-            org_arr[org_arr < lb] = lb
+            org_arr *= np.loadtxt(mlt)
+        if "upper_bound" in df.columns:
+            ub_vals = df_mf.upper_bound.value_counts().dropna().to_dict()
+            if len(ub_vals) == 0:
+                pass
+            elif len(ub_vals) > 1:
+                print(ub_vals)
+                raise Exception("different upper bound values for {0}".format(org_file))
+            else:
+                ub = float(list(ub_vals.keys())[0])
+                org_arr[org_arr > ub] = ub
+        if "lower_bound" in df.columns:
+            lb_vals = df_mf.lower_bound.value_counts().dropna().to_dict()
+            if len(lb_vals) == 0:
+                pass
+            elif len(lb_vals) > 1:
+                raise Exception("different lower bound values for {0}".format(org_file))
+            else:
+                lb = float(list(lb_vals.keys())[0])
+                org_arr[org_arr < lb] = lb
 
     np.savetxt(model_file, np.atleast_2d(org_arr), fmt="%15.6E", delimiter="")
 
@@ -3672,7 +3702,7 @@ def apply_array_pars(arr_par="arr_pars.csv", arr_par_file=None, chunk_len=50):
         model input array (and optionally pp files).  This speeds up
         execution time considerably but means you need to make sure your
         forward run script uses the proper multiprocessing idioms for
-        freeze support and main thread handling.
+        freeze support and main thread handling (`PstFrom` does this for you).
 
     """
     if arr_par_file is not None:
@@ -3701,10 +3731,25 @@ def apply_array_pars(arr_par="arr_pars.csv", arr_par_file=None, chunk_len=50):
 
     if "pp_file" in df.columns:
         print("starting fac2real", datetime.now())
-        pp_df = df.loc[df.pp_file.notna(), ["pp_file", "fac_file", "mlt_file"]].rename(
-            columns={"fac_file": "factors_file", "mlt_file": "out_file"}
+        pp_df = df.loc[
+            df.pp_file.notna(),
+            [
+                "pp_file",
+                "fac_file",
+                "mlt_file",
+                "pp_fill_value",
+                "pp_lower_limit",
+                "pp_upper_limit",
+            ],
+        ].rename(
+            columns={
+                "fac_file": "factors_file",
+                "mlt_file": "out_file",
+                "pp_fill_value": "fill_value",
+                "pp_lower_limit": "lower_lim",
+                "pp_upper_limit": "upper_lim",
+            }
         )
-        pp_df.loc[:, "lower_lim"] = 1.0e-10
         # don't need to process all (e.g. if const. mults apply across kper...)
         pp_args = pp_df.drop_duplicates().to_dict("records")
         num_ppargs = len(pp_args)
@@ -3716,15 +3761,18 @@ def apply_array_pars(arr_par="arr_pars.csv", arr_par_file=None, chunk_len=50):
         )
         remainder = np.array(pp_args)[num_chunk_floor * chunk_len :].tolist()
         chunks = main_chunks + [remainder]
-
-        pool = mp.Pool()
-        x = [
-            pool.apply_async(_process_chunk_fac2real, args=(chunk, i))
-            for i, chunk in enumerate(chunks)
-        ]
-        [xx.get() for xx in x]
-        pool.close()
-        pool.join()
+        print("number of chunks to process:", len(chunks))
+        if len(chunks) == 1:
+            _process_chunk_fac2real(chunks[0], 0)
+        else:
+            pool = mp.Pool()
+            x = [
+                pool.apply_async(_process_chunk_fac2real, args=(chunk, i))
+                for i, chunk in enumerate(chunks)
+            ]
+            [xx.get() for xx in x]
+            pool.close()
+            pool.join()
         # procs = []
         # for chunk in chunks:
         #     p = mp.Process(target=_process_chunk_fac2real, args=[chunk])
@@ -3746,6 +3794,9 @@ def apply_array_pars(arr_par="arr_pars.csv", arr_par_file=None, chunk_len=50):
     )  # the list of files broken down into chunks
     remainder = uniq[num_chunk_floor * chunk_len :].tolist()  # remaining files
     chunks = main_chunks + [remainder]
+    print("number of chunks to process:", len(chunks))
+    if len(chunks) == 1:
+        _process_chunk_array_files(chunks[0], 0, df)
     # procs = []
     # for chunk in chunks:  # now only spawn processor for each chunk
     #     p = mp.Process(target=_process_chunk_model_files, args=[chunk, df])
@@ -3754,14 +3805,15 @@ def apply_array_pars(arr_par="arr_pars.csv", arr_par_file=None, chunk_len=50):
     # for p in procs:
     #     r = p.get(False)
     #     p.join()
-    pool = mp.Pool()
-    x = [
-        pool.apply_async(_process_chunk_model_files, args=(chunk, i, df))
-        for i, chunk in enumerate(chunks)
-    ]
-    [xx.get() for xx in x]
-    pool.close()
-    pool.join()
+    else:
+        pool = mp.Pool()
+        x = [
+            pool.apply_async(_process_chunk_array_files, args=(chunk, i, df))
+            for i, chunk in enumerate(chunks)
+        ]
+        [xx.get() for xx in x]
+        pool.close()
+        pool.join()
     print("finished arr mlt", datetime.now())
 
 
@@ -3774,7 +3826,8 @@ def apply_list_pars():
 
         Requires either "temporal_list_pars.csv" or "spatial_list_pars.csv"
 
-        Should be added to the forward_run.py script
+        Should be added to the forward_run.py script (called programmaticlly
+        by the `PstFrom` forward run script)
 
 
     """
@@ -3896,7 +3949,141 @@ def apply_list_pars():
         )
 
 
-def apply_genericlist_pars(df):
+def calc_array_par_summary_stats(arr_par_file="mult2model_info.csv"):
+    """read and generate summary statistics for the resulting model input arrays from
+    applying array par multipliers
+
+    Args:
+        arr_par_file (`str`): the array multiplier key file
+
+    Returns:
+        pd.DataFrame: dataframe of summary stats for each model_file entry
+
+    Note:
+        This function uses an optional "zone_file" column in the `arr_par_file`. If multiple zones
+        files are used, then zone arrays are aggregated to a single array
+
+        "dif" values are original array values minus model input array values
+
+        The outputs from the function can be used to monitor model input array
+        changes that occur during PE/UQ analyses, especially when the parameters
+        are multiplier types and the dimensionality is very high.
+
+        Consider using `PstFrom.add_observations()` to setup obs for the csv file
+        that this function writes.
+
+    """
+    df = pd.read_csv(arr_par_file, index_col=0)
+    df = df.loc[df.index_cols.isna(), :].copy()
+    if df.shape[0] == 0:
+        return None
+    model_input_files = df.model_file.unique()
+    model_input_files.sort()
+    records = dict()
+    stat_dict = {
+        "mean": np.nanmean,
+        "stdev": np.nanstd,
+        "median": np.nanmedian,
+        "min": np.nanmin,
+        "max": np.nanmax,
+    }
+    quantiles = [0.05, 0.25, 0.75, 0.95]
+    for stat in stat_dict.keys():
+        records[stat] = []
+        records[stat + "_org"] = []
+        records[stat + "_dif"] = []
+
+    for q in quantiles:
+        records["quantile_{0}".format(q)] = []
+        records["quantile_{0}_org".format(q)] = []
+        records["quantile_{0}_dif".format(q)] = []
+    records["upper_bound"] = []
+    records["lower_bound"] = []
+    records["upper_bound_org"] = []
+    records["lower_bound_org"] = []
+    records["upper_bound_dif"] = []
+    records["lower_bound_dif"] = []
+
+    for model_input_file in model_input_files:
+
+        arr = np.loadtxt(model_input_file)
+        org_file = df.loc[df.model_file == model_input_file, "org_file"].values
+        org_file = org_file[0]
+        org_arr = np.loadtxt(org_file)
+        if "zone_file" in df.columns:
+            zone_file = (
+                df.loc[df.model_file == model_input_file, "zone_file"].dropna().unique()
+            )
+            zone_arr = None
+            if len(zone_file) > 1:
+                zone_arr = np.zeros_like(arr)
+                for zf in zone_file:
+                    za = np.loadtxt(zf)
+                    zone_arr[za != 0] = 1
+            elif len(zone_file) == 1:
+                zone_arr = np.loadtxt(zone_file[0])
+            if zone_arr is not None:
+                arr[zone_arr == 0] = np.NaN
+                org_arr[zone_arr == 0] = np.NaN
+
+        for stat, func in stat_dict.items():
+            v = func(arr)
+            records[stat].append(v)
+            ov = func(org_arr)
+            records[stat + "_org"].append(ov)
+            records[stat + "_dif"].append(ov - v)
+        for q in quantiles:
+            v = np.nanquantile(arr, q)
+            ov = np.nanquantile(org_arr, q)
+            records["quantile_{0}".format(q)].append(v)
+            records["quantile_{0}_org".format(q)].append(ov)
+            records["quantile_{0}_dif".format(q)].append(ov - v)
+        ub = df.loc[df.model_file == model_input_file, "upper_bound"].max()
+        lb = df.loc[df.model_file == model_input_file, "lower_bound"].min()
+        if pd.isna(ub):
+            records["upper_bound"].append(0)
+            records["upper_bound_org"].append(0)
+            records["upper_bound_dif"].append(0)
+
+        else:
+            iarr = np.zeros_like(arr)
+            iarr[arr == ub] = 1
+            v = iarr.sum()
+            iarr = np.zeros_like(arr)
+            iarr[org_arr == ub] = 1
+            ov = iarr.sum()
+            records["upper_bound"].append(v)
+            records["upper_bound_org"].append(ov)
+            records["upper_bound_dif"].append(ov - v)
+
+        if pd.isna(lb):
+            records["lower_bound"].append(0)
+            records["lower_bound_org"].append(0)
+            records["lower_bound_dif"].append(0)
+
+        else:
+            iarr = np.zeros_like(arr)
+            iarr[arr == lb] = 1
+            v = iarr.sum()
+            iarr = np.zeros_like(arr)
+            iarr[org_arr == lb] = 1
+            ov = iarr.sum()
+            records["lower_bound"].append(v)
+            records["lower_bound_org"].append(ov)
+            records["lower_bound_dif"].append(ov - v)
+
+    # scrub model input files
+    model_input_files = [
+        f.replace(".", "_").replace("\\", "_").replace("/", "_")
+        for f in model_input_files
+    ]
+    df = pd.DataFrame(records, index=model_input_files)
+    df.index.name = "model_file"
+    df.to_csv("arr_par_summary.csv")
+    return df
+
+
+def apply_genericlist_pars(df, chunk_len=50):
     """a function to apply list style mult parameters
 
     Args:
@@ -3911,150 +4098,184 @@ def apply_genericlist_pars(df):
             "use_cols": columns to mults act on,
             "upper_bound": ultimate upper bound for model input file parameter,
             "lower_bound": ultimate lower bound for model input file parameter}
+        chunk_len (`int`): number of chunks for each multiprocessing instance to handle.
+            Default is 50.
+
+    Note:
+        This function is called programmatically during the `PstFrom` forward run process
 
 
     """
+    print("starting list mlt", datetime.now())
+    uniq = df.model_file.unique()  # unique model input files to be produced
+    num_uniq = len(uniq)  # number of input files to be produced
+    # number of files to send to each processor
+    # lazy plitting the files to be processed into even chunks
+    num_chunk_floor = num_uniq // chunk_len  # number of whole chunks
+    main_chunks = (
+        uniq[: num_chunk_floor * chunk_len].reshape([-1, chunk_len]).tolist()
+    )  # the list of files broken down into chunks
+    remainder = uniq[num_chunk_floor * chunk_len :].tolist()  # remaining files
+    chunks = main_chunks + [remainder]
+    print("number of chunks to process:", len(chunks))
+    if len(chunks) == 1:
+        _process_chunk_list_files(chunks[0], 0, df)
+    else:
+        pool = mp.Pool()
+        x = [
+            pool.apply_async(_process_chunk_list_files, args=(chunk, i, df))
+            for i, chunk in enumerate(chunks)
+        ]
+        [xx.get() for xx in x]
+        pool.close()
+        pool.join()
+    print("finished list mlt", datetime.now())
 
-    uniq = df.model_file.unique()
-    for model_file in uniq:
-        print("processing model file:", model_file)
-        df_mf = df.loc[df.model_file == model_file, :].copy()
-        # read data stored in org (mults act on this)
-        org_file = df_mf.org_file.unique()
-        if org_file.shape[0] != 1:
-            raise Exception("wrong number of org_files for {0}".format(model_file))
-        org_file = org_file[0]
-        print("org file:", org_file)
-        notfree = df_mf.fmt[df_mf.fmt != "free"]
-        if len(notfree) > 1:
+
+def _process_chunk_list_files(chunk, i, df):
+    for model_file in chunk:
+        _process_list_file(model_file, df)
+    print("process", i, " processed ", len(chunk), "process_list_file calls")
+
+
+def _process_list_file(model_file, df):
+
+    # print("processing model file:", model_file)
+    df_mf = df.loc[df.model_file == model_file, :].copy()
+    # read data stored in org (mults act on this)
+    org_file = df_mf.org_file.unique()
+    if org_file.shape[0] != 1:
+        raise Exception("wrong number of org_files for {0}".format(model_file))
+    org_file = org_file[0]
+    # print("org file:", org_file)
+    notfree = df_mf.fmt[df_mf.fmt != "free"]
+    if len(notfree) > 1:
+        raise Exception(
+            "too many different format specifiers for "
+            "model file: {0}".format(model_file)
+        )
+    elif len(notfree) == 1:
+        fmt = notfree.values[0]
+    else:
+        fmt = df_mf.fmt.values[-1]
+    if fmt == "free":
+        if df_mf.sep.dropna().nunique() > 1:
             raise Exception(
-                "too many different format specifiers for "
+                "too many different sep specifiers for "
                 "model file: {0}".format(model_file)
             )
-        elif len(notfree) == 1:
-            fmt = notfree.values[0]
         else:
-            fmt = df_mf.fmt.values[-1]
-        if fmt == "free":
-            if df_mf.sep.dropna().nunique() > 1:
-                raise Exception(
-                    "too many different sep specifiers for "
-                    "model file: {0}".format(model_file)
-                )
-            else:
-                sep = df_mf.sep.dropna().values[-1]
-        else:
-            sep = None
-        datastrtrow = df_mf.head_rows.values[-1]
-        if fmt.lower() == "free" and sep == " ":
-            delim_whitespace = True
-        if datastrtrow > 0:
-            with open(org_file, "r") as fp:
-                storehead = [next(fp) for _ in range(datastrtrow)]
-        else:
-            storehead = []
-        # work out if headers are used for index_cols
-        index_col_eg = df_mf.index_cols.iloc[-1][0]
-        if isinstance(index_col_eg, str):
-            # TODO: add test for model file with headers
-            # index_cols can be from header str
-            header = 0
-            hheader = True
-        elif isinstance(index_col_eg, int):
-            # index_cols are column numbers in input file
-            header = None
-            hheader = None
-            # actually do need index cols to be list of strings
-            # to be compatible when the saved original file is read in.
-            df_mf.loc[:, "index_cols"] = df_mf.index_cols.apply(
-                lambda x: [str(i) for i in x]
-            )
+            sep = df_mf.sep.dropna().values[-1]
+    else:
+        sep = None
+    datastrtrow = df_mf.head_rows.values[-1]
+    if fmt.lower() == "free" and sep == " ":
+        delim_whitespace = True
+    if datastrtrow > 0:
+        with open(org_file, "r") as fp:
+            storehead = [next(fp) for _ in range(datastrtrow)]
+    else:
+        storehead = []
+    # work out if headers are used for index_cols
+    # big assumption here that int type index cols will not be written as headers
+    index_col_eg = df_mf.index_cols.iloc[-1][0]
+    if isinstance(index_col_eg, str):
+        # TODO: add test for model file with headers
+        # index_cols can be from header str
+        header = 0
+        hheader = True
+    elif isinstance(index_col_eg, int):
+        # index_cols are column numbers in input file
+        header = None
+        hheader = None
+        # actually do need index cols to be list of strings
+        # to be compatible when the saved original file is read in.
+        df_mf.loc[:, "index_cols"] = df_mf.index_cols.apply(
+            lambda x: [str(i) for i in x]
+        )
 
-        # if writen by PstFrom this should always be comma delim - tidy
-        org_data = pd.read_csv(org_file, skiprows=datastrtrow, header=header)
-        # mult columns will be string type, so to make sure they align
-        org_data.columns = org_data.columns.astype(str)
-        print("org_data columns:", org_data.columns)
-        print("org_data shape:", org_data.shape)
-        new_df = org_data.copy()
-        for mlt in df_mf.itertuples():
+    # if writen by PstFrom this should always be comma delim - tidy
+    org_data = pd.read_csv(org_file, skiprows=datastrtrow, header=header)
+    # mult columns will be string type, so to make sure they align
+    org_data.columns = org_data.columns.astype(str)
+    # print("org_data columns:", org_data.columns)
+    # print("org_data shape:", org_data.shape)
+    new_df = org_data.copy()
+    for mlt in df_mf.itertuples():
 
-            try:
-                new_df = (
-                    new_df.reset_index()
-                    .rename(columns={"index": "oidx"})
-                    .set_index(mlt.index_cols)
-                )
-                new_df = new_df.sort_index()
-            except Exception as e:
-                print(
-                    "error setting mlt index_cols: ",
-                    str(mlt.index_cols),
-                    " for new_df with cols: ",
-                    list(new_df.columns),
-                )
-                raise Exception("error setting mlt index_cols: " + str(e))
-
-            if not hasattr(mlt, "mlt_file") or pd.isna(mlt.mlt_file):
-                print("null mlt file for org_file '" + org_file + "', continuing...")
-            else:
-                mlts = pd.read_csv(mlt.mlt_file)
-                # get mult index to align with org_data,
-                # mult idxs will always be written zero based
-                # if original model files is not zero based need to add 1
-                add1 = int(mlt.zero_based == False)
-                mlts.index = pd.MultiIndex.from_tuples(
-                    mlts.sidx.apply(lambda x: tuple(add1 + np.array(literal_eval(x)))),
-                    names=mlt.index_cols,
-                )
-                if mlts.index.nlevels < 2:  # just in case only one index col is used
-                    mlts.index = mlts.index.get_level_values(0)
-                common_idx = (
-                    new_df.index.intersection(mlts.index)
-                    .sort_values()
-                    .drop_duplicates()
-                )
-                mlt_cols = [str(col) for col in mlt.use_cols]
-                new_df.loc[common_idx, mlt_cols] = (
-                    new_df.loc[common_idx, mlt_cols] * mlts.loc[common_idx, mlt_cols]
-                ).values
-            # bring mult index back to columns AND re-order
+        try:
             new_df = (
-                new_df.reset_index().set_index("oidx")[org_data.columns].sort_index()
+                new_df.reset_index()
+                .rename(columns={"index": "oidx"})
+                .set_index(mlt.index_cols)
             )
-        if "upper_bound" in df.columns:
-            ub = df_mf.apply(
-                lambda x: pd.Series(
-                    {str(c): b for c, b in zip(x.use_cols, x.upper_bound)}
+            new_df = new_df.sort_index()
+        except Exception as e:
+            print(
+                "error setting mlt index_cols: ",
+                str(mlt.index_cols),
+                " for new_df with cols: ",
+                list(new_df.columns),
+            )
+            raise Exception("error setting mlt index_cols: " + str(e))
+
+        if not hasattr(mlt, "mlt_file") or pd.isna(mlt.mlt_file):
+            print("null mlt file for org_file '" + org_file + "', continuing...")
+        else:
+            mlts = pd.read_csv(mlt.mlt_file)
+            # get mult index to align with org_data,
+            # get mult index to align with org_data,
+            # mult idxs will always be written zero based if int
+            # if original model files is not zero based need to add 1
+            add1 = int(mlt.zero_based == False)
+            mlts.index = pd.MultiIndex.from_tuples(
+                mlts.sidx.apply(
+                    lambda x: [
+                        add1 + int(xx) if xx.strip().isdigit() else xx.strip("'\" ")
+                        for xx in x.strip("()").split(",")
+                        if xx
+                    ]
                 ),
-                axis=1,
-            ).max()
-            if ub.notnull().any():
-                for col, val in ub.items():
-                    new_df.loc[new_df.loc[:, col] > val, col] = val
-        if "lower_bound" in df.columns:
-            lb = df_mf.apply(
-                lambda x: pd.Series(
-                    {str(c): b for c, b in zip(x.use_cols, x.lower_bound)}
-                ),
-                axis=1,
-            ).min()
-            if lb.notnull().any():
-                for col, val in lb.items():
-                    new_df.loc[new_df.loc[:, col] < val, col] = val
-        with open(model_file, "w") as fo:
-            kwargs = {}
-            if "win" in platform.platform().lower():
-                kwargs = {"line_terminator": "\n"}
-            if len(storehead) != 0:
-                fo.write("\n".join(storehead))
-                fo.flush()
-            if fmt.lower() == "free":
-                new_df.to_csv(
-                    fo, index=False, mode="a", sep=sep, header=hheader, **kwargs
-                )
-            else:
-                np.savetxt(fo, np.atleast_2d(new_df.values), fmt=fmt)
+                names=mlt.index_cols,
+            )
+            if mlts.index.nlevels < 2:  # just in case only one index col is used
+                mlts.index = mlts.index.get_level_values(0)
+            common_idx = (
+                new_df.index.intersection(mlts.index).sort_values().drop_duplicates()
+            )
+            mlt_cols = [str(col) for col in mlt.use_cols]
+            new_df.loc[common_idx, mlt_cols] = (
+                new_df.loc[common_idx, mlt_cols] * mlts.loc[common_idx, mlt_cols]
+            ).values
+        # bring mult index back to columns AND re-order
+        new_df = new_df.reset_index().set_index("oidx")[org_data.columns].sort_index()
+    if "upper_bound" in df.columns:
+        ub = df_mf.apply(
+            lambda x: pd.Series({str(c): b for c, b in zip(x.use_cols, x.upper_bound)}),
+            axis=1,
+        ).max()
+        if ub.notnull().any():
+            for col, val in ub.items():
+                new_df.loc[new_df.loc[:, col] > val, col] = val
+    if "lower_bound" in df.columns:
+        lb = df_mf.apply(
+            lambda x: pd.Series({str(c): b for c, b in zip(x.use_cols, x.lower_bound)}),
+            axis=1,
+        ).min()
+        if lb.notnull().any():
+            for col, val in lb.items():
+                new_df.loc[new_df.loc[:, col] < val, col] = val
+    with open(model_file, "w") as fo:
+        kwargs = {}
+        if "win" in platform.platform().lower():
+            kwargs = {"line_terminator": "\n"}
+        if len(storehead) != 0:
+            fo.write("\n".join(storehead))
+            fo.flush()
+        if fmt.lower() == "free":
+            new_df.to_csv(fo, index=False, mode="a", sep=sep, header=hheader, **kwargs)
+        else:
+            np.savetxt(fo, np.atleast_2d(new_df.values), fmt=fmt)
 
 
 def write_const_tpl(name, tpl_file, suffix, zn_array=None, shape=None, longnames=False):
@@ -4072,6 +4293,9 @@ def write_const_tpl(name, tpl_file, suffix, zn_array=None, shape=None, longnames
 
     Returns:
         `pandas.DataFrame`: a dataframe with parameter information
+
+    Note:
+        This function is used during the `PstFrom` setup process
 
 
     """
@@ -4135,6 +4359,15 @@ def write_grid_tpl(
     Returns:
         `pandas.DataFrame`: a dataframe with parameter information
 
+    Note:
+        This function is used during the `PstFrom` setup process
+
+    Example::
+
+        pyemu.helpers.write_grid_tpl("hk_layer1","hk_Layer_1.ref.tpl","gr",
+                                     zn_array=ib_layer_1,shape=(500,500))
+
+
     """
 
     if shape is None and zn_array is None:
@@ -4151,12 +4384,12 @@ def write_grid_tpl(
                     pname = " 1.0 "
                 else:
                     if longnames:
-                        pname = "{0}_i:{0}_j:{1}_{2}".format(name, i, j, suffix)
+                        pname = "{0}_i:{1}_j:{2}_{3}".format(name, i, j, suffix)
                         if spatial_reference is not None:
                             pname += "_x:{0:10.2E}_y:{1:10.2E}".format(
                                 spatial_reference.xcentergrid[i, j],
                                 spatial_reference.ycentergrid[i, j],
-                            )
+                            ).replace(" ", "")
                     else:
                         pname = "{0}{1:03d}{2:03d}".format(name, i, j)
                         if len(pname) > 12:
@@ -4201,11 +4434,14 @@ def write_zone_tpl(
             must be passed
         longnames (`bool`): flag to use longer names that exceed 12 chars in length.
             Default is False.
-        fill_value (`str`): value to fill locations where `zn_array` is less than 1.0.
+        fill_value (`str`): value to fill locations where `zn_array` is zero or less.
             Default is "1.0".
 
     Returns:
         `pandas.DataFrame`: a dataframe with parameter information
+
+    Note:
+        This function is used during the `PstFrom` setup process
 
     """
 
@@ -4246,7 +4482,7 @@ def write_zone_tpl(
 
 
 def build_jac_test_csv(pst, num_steps, par_names=None, forward=True):
-    """build a dataframe of jactest inputs for use with sweep
+    """build a dataframe of jactest inputs for use with pestpp-swp
 
     Args:
         pst (`pyemu.Pst`): existing control file
@@ -4259,6 +4495,7 @@ def build_jac_test_csv(pst, num_steps, par_names=None, forward=True):
     Returns:
         `pandas.DataFrame`: the sequence of model runs to evaluate
         for the jactesting.
+
 
     """
     if isinstance(pst, str):
@@ -4326,7 +4563,7 @@ def build_jac_test_csv(pst, num_steps, par_names=None, forward=True):
     return df
 
 
-def _write_df_tpl(filename, df, sep=",", tpl_marker="~", **kwargs):
+def _write_df_tpl(filename, df, sep=",", tpl_marker="~", headerlines=None, **kwargs):
     """function write a pandas dataframe to a template file."""
     if "line_terminator" not in kwargs:
         if "win" in platform.platform().lower():
@@ -4334,7 +4571,30 @@ def _write_df_tpl(filename, df, sep=",", tpl_marker="~", **kwargs):
     with open(filename, "w") as f:
         f.write("ptf {0}\n".format(tpl_marker))
         f.flush()
+        if headerlines is not None:
+            _add_headerlines(f, headerlines)
         df.to_csv(f, sep=sep, mode="a", **kwargs)
+
+
+def _add_headerlines(f, headerlines):
+    lc = 0
+    for key in sorted(headerlines.keys()):
+        if key > lc:
+            lc += 1
+            continue
+            # TODO if we want to preserve mid-table comments,
+            #  these lines might help - will also need to
+            #  pass comment_char through so it can be
+            #  used by the apply methods
+            # to = key - lc
+            # df.iloc[fr:to].to_csv(
+            #     fp, sep=',', mode='a', header=hheader, # todo - presence of header may cause an issue with this
+            #     **kwargs)
+            # lc += to - fr
+            # fr = to
+        f.write(headerlines[key])
+        f.flush()
+        lc += 1
 
 
 def setup_fake_forward_run(
@@ -4464,8 +4724,7 @@ def setup_temporal_diff_obs(
         - **pandas.DataFrame**: a dataframe of observation information for use in the pest control file
 
     Note:
-
-        this is the companion function of `helpers.apply_temporal_diff_obs()`.
+        This is the companion function of `helpers.apply_temporal_diff_obs()`.
 
 
 
@@ -4611,14 +4870,15 @@ def apply_temporal_diff_obs(config_file):
 
     Args:
         config_file (`str`): configuration file written by `pyemu.helpers.setup_temporal_diff_obs`.
+
     Returns:
         diff_df (`pandas.DataFrame`) : processed difference observations
-    Note:
 
-        writes `config_file.replace(".config",".processed")` output file that can be read
+    Note:
+        Writes `config_file.replace(".config",".processed")` output file that can be read
         with the instruction file that is created by `pyemu.helpers.setup_temporal_diff_obs()`.
 
-        this is the companion function of `helpers.setup_setup_temporal_diff_obs()`.
+        This is the companion function of `helpers.setup_setup_temporal_diff_obs()`.
     """
 
     if not os.path.exists(config_file):
@@ -4684,87 +4944,25 @@ class SpatialReference(object):
     Lifted wholesale from Flopy, and preserved here...
     ...maybe slighlty over-engineered for here
 
-    Parameters
-    ----------
+    Args:
 
-    delr : numpy ndarray
-        the model discretization delr vector
-        (An array of spacings along a row)
-    delc : numpy ndarray
-        the model discretization delc vector
-        (An array of spacings along a column)
-    lenuni : int
-        the length units flag from the discretization package
-        (default 2)
-    xul : float
-        the x coordinate of the upper left corner of the grid
-        Enter either xul and yul or xll and yll.
-    yul : float
-        the y coordinate of the upper left corner of the grid
-        Enter either xul and yul or xll and yll.
-    xll : float
-        the x coordinate of the lower left corner of the grid
-        Enter either xul and yul or xll and yll.
-    yll : float
-        the y coordinate of the lower left corner of the grid
-        Enter either xul and yul or xll and yll.
-    rotation : float
-        the counter-clockwise rotation (in degrees) of the grid
+        delr (`numpy ndarray`): the model discretization delr vector (An array of spacings along a row)
+        delc (`numpy ndarray`): the model discretization delc vector (An array of spacings along a column)
+        lenuni (`int`): the length units flag from the discretization package. Default is 2.
+        xul (`float`): The x coordinate of the upper left corner of the grid. Enter either xul and yul or xll and yll.
+        yul (`float`): The y coordinate of the upper left corner of the grid. Enter either xul and yul or xll and yll.
+        xll (`float`): The x coordinate of the lower left corner of the grid. Enter either xul and yul or xll and yll.
+        yll (`float`): The y coordinate of the lower left corner of the grid. Enter either xul and yul or xll and yll.
+        rotation (`float`): The counter-clockwise rotation (in degrees) of the grid
+        proj4_str (`str`): a PROJ4 string that identifies the grid in space. warning: case sensitive!
+        units (`string`): Units for the grid.  Must be either "feet" or "meters"
+        epsg (`int`): EPSG code that identifies the grid in space. Can be used in lieu of
+            proj4. PROJ4 attribute will auto-populate if there is an internet
+            connection(via get_proj4 method).
+            See https://www.epsg-registry.org/ or spatialreference.org
+        length_multiplier (`float`): multiplier to convert model units to spatial reference units.
+            delr and delc above will be multiplied by this value. (default=1.)
 
-    proj4_str: str
-        a PROJ4 string that identifies the grid in space. warning: case
-        sensitive!
-
-    units : string
-        Units for the grid.  Must be either feet or meters
-
-    epsg : int
-        EPSG code that identifies the grid in space. Can be used in lieu of
-        proj4. PROJ4 attribute will auto-populate if there is an internet
-        connection(via get_proj4 method).
-        See https://www.epsg-registry.org/ or spatialreference.org
-
-    length_multiplier : float
-        multiplier to convert model units to spatial reference units.
-        delr and delc above will be multiplied by this value. (default=1.)
-
-    Attributes
-    ----------
-    xedge : ndarray
-        array of column edges
-
-    yedge : ndarray
-        array of row edges
-
-    xgrid : ndarray
-        numpy meshgrid of xedges
-
-    ygrid : ndarray
-        numpy meshgrid of yedges
-
-    xcenter : ndarray
-        array of column centers
-
-    ycenter : ndarray
-        array of row centers
-
-    xcentergrid : ndarray
-        numpy meshgrid of column centers
-
-    ycentergrid : ndarray
-        numpy meshgrid of row centers
-
-    vertices : 1D array
-        1D array of cell vertices for whole grid in C-style (row-major) order
-        (same as np.ravel())
-
-
-    Notes
-    -----
-
-    xul and yul can be explicitly (re)set after SpatialReference
-    instantiation, but only before any of the other attributes and methods are
-    accessed
 
     """
 
@@ -5475,8 +5673,6 @@ class SpatialReference(object):
         """
         Get the extent of the rotated and offset grid
 
-        Return (xmin, xmax, ymin, ymax)
-
         """
         x0 = self.xedge[0]
         x1 = self.xedge[-1]
@@ -5638,15 +5834,15 @@ class SpatialReference(object):
         """Return the row and column of a point or sequence of points
         in real-world coordinates.
 
-        Parameters
-        ----------
-        x : scalar or sequence of x coordinates
-        y : scalar or sequence of y coordinates
+        Args:
+            x (`float`): scalar or sequence of x coordinates
+            y (`float`): scalar or sequence of y coordinates
 
-        Returns
-        -------
-        i : row or sequence of rows (zero-based)
-        j : column or sequence of columns (zero-based)
+        Returns:
+            tuple of
+
+            - **int** : row or sequence of rows (zero-based)
+            - **int** : column or sequence of columns (zero-based)
         """
         if np.isscalar(x):
             c = (np.abs(self.xcentergrid[0] - x)).argmin()
@@ -5657,296 +5853,6 @@ class SpatialReference(object):
             c = (np.abs(xcp.transpose() - x)).argmin(axis=0)
             r = (np.abs(ycp.transpose() - y)).argmin(axis=0)
         return r, c
-
-    # def get_grid_map_plotter(self, **kwargs):
-    #     """
-    #     Create a QuadMesh plotting object for this grid
-    #
-    #     Returns
-    #     -------
-    #     quadmesh : matplotlib.collections.QuadMesh
-    #
-    #     """
-    #     from matplotlib.collections import QuadMesh
-    #     verts = np.vstack((self.xgrid.flatten(), self.ygrid.flatten())).T
-    #     qm = QuadMesh(self.ncol, self.nrow, verts)
-    #     return qm
-    #
-    # def plot_array(self, a, ax=None, **kwargs):
-    #     """
-    #     Create a QuadMesh plot of the specified array using pcolormesh
-    #
-    #     Parameters
-    #     ----------
-    #     a : np.ndarray
-    #
-    #     Returns
-    #     -------
-    #     quadmesh : matplotlib.collections.QuadMesh
-    #
-    #     """
-    #     import matplotlib.pyplot as plt
-    #     if ax is None:
-    #         ax = plt.gca()
-    #     qm = ax.pcolormesh(self.xgrid, self.ygrid, a, **kwargs)
-    #     return qm
-
-    # def export_array(self, filename, a, nodata=-9999,
-    #                  fieldname='value',
-    #                  **kwargs):
-    #     """
-    #     Write a numpy array to Arc Ascii grid or shapefile with the
-    #     model reference.
-    #
-    #     Parameters
-    #     ----------
-    #     filename : str
-    #         Path of output file. Export format is determined by
-    #         file extension.
-    #         '.asc'  Arc Ascii grid
-    #         '.tif'  GeoTIFF (requires rasterio package)
-    #         '.shp'  Shapefile
-    #     a : 2D numpy.ndarray
-    #         Array to export
-    #     nodata : scalar
-    #         Value to assign to np.nan entries (default -9999)
-    #     fieldname : str
-    #         Attribute field name for array values (shapefile export only).
-    #         (default 'values')
-    #     kwargs:
-    #         keyword arguments to np.savetxt (ascii)
-    #         rasterio.open (GeoTIFF)
-    #         or flopy.export.shapefile_utils.write_grid_shapefile2
-    #
-    #     Notes
-    #     -----
-    #     Rotated grids will be either be unrotated prior to export,
-    #     using scipy.ndimage.rotate (Arc Ascii format) or rotation will be
-    #     included in their transform property (GeoTiff format). In either case
-    #     the pixels will be displayed in the (unrotated) projected geographic coordinate system,
-    #     so the pixels will no longer align exactly with the model grid
-    #     (as displayed from a shapefile, for example). A key difference between
-    #     Arc Ascii and GeoTiff (besides disk usage) is that the
-    #     unrotated Arc Ascii will have a different grid size, whereas the GeoTiff
-    #     will have the same number of rows and pixels as the original.
-    #
-    #     """
-    #
-    #     if filename.lower().endswith(".asc"):
-    #         if len(np.unique(self.delr)) != len(np.unique(self.delc)) != 1 \
-    #                 or self.delr[0] != self.delc[0]:
-    #             raise ValueError('Arc ascii arrays require a uniform grid.')
-    #
-    #         xll, yll = self.xll, self.yll
-    #         cellsize = self.delr[0] * self.length_multiplier
-    #         fmt = kwargs.get('fmt', '%.18e')
-    #         a = a.copy()
-    #         a[np.isnan(a)] = nodata
-    #         if self.rotation != 0:
-    #             try:
-    #                 from scipy.ndimage import rotate
-    #                 a = rotate(a, self.rotation, cval=nodata)
-    #                 height_rot, width_rot = a.shape
-    #                 xmin, ymin, xmax, ymax = self.bounds
-    #                 dx = (xmax - xmin) / width_rot
-    #                 dy = (ymax - ymin) / height_rot
-    #                 cellsize = np.max((dx, dy))
-    #                 # cellsize = np.cos(np.radians(self.rotation)) * cellsize
-    #                 xll, yll = xmin, ymin
-    #             except ImportError:
-    #                 print('scipy package required to export rotated grid.')
-    #
-    #         filename = '.'.join(
-    #             filename.split('.')[:-1]) + '.asc'  # enforce .asc ending
-    #         nrow, ncol = a.shape
-    #         a[np.isnan(a)] = nodata
-    #         txt = 'ncols  {:d}\n'.format(ncol)
-    #         txt += 'nrows  {:d}\n'.format(nrow)
-    #         txt += 'xllcorner  {:f}\n'.format(xll)
-    #         txt += 'yllcorner  {:f}\n'.format(yll)
-    #         txt += 'cellsize  {}\n'.format(cellsize)
-    #         # ensure that nodata fmt consistent w values
-    #         txt += 'NODATA_value  {}\n'.format(fmt) % (nodata)
-    #         with open(filename, 'w') as output:
-    #             output.write(txt)
-    #         with open(filename, 'ab') as output:
-    #             np.savetxt(output, a, **kwargs)
-    #         print('wrote {}'.format(filename))
-    #
-    #     elif filename.lower().endswith(".tif"):
-    #         if len(np.unique(self.delr)) != len(np.unique(self.delc)) != 1 \
-    #                 or self.delr[0] != self.delc[0]:
-    #             raise ValueError('GeoTIFF export require a uniform grid.')
-    #         try:
-    #             import rasterio
-    #             from rasterio import Affine
-    #         except:
-    #             print('GeoTIFF export requires the rasterio package.')
-    #             return
-    #         dxdy = self.delc[0] * self.length_multiplier
-    #         trans = Affine.translation(self.xul, self.yul) * \
-    #                 Affine.rotation(self.rotation) * \
-    #                 Affine.scale(dxdy, -dxdy)
-    #
-    #         # third dimension is the number of bands
-    #         a = a.copy()
-    #         if len(a.shape) == 2:
-    #             a = np.reshape(a, (1, a.shape[0], a.shape[1]))
-    #         if a.dtype.name == 'int64':
-    #             a = a.astype('int32')
-    #             dtype = rasterio.int32
-    #         elif a.dtype.name == 'int32':
-    #             dtype = rasterio.int32
-    #         elif a.dtype.name == 'float64':
-    #             dtype = rasterio.float64
-    #         elif a.dtype.name == 'float32':
-    #             dtype = rasterio.float32
-    #         else:
-    #             msg = 'ERROR: invalid dtype "{}"'.format(a.dtype.name)
-    #             raise TypeError(msg)
-    #
-    #         meta = {'count': a.shape[0],
-    #                 'width': a.shape[2],
-    #                 'height': a.shape[1],
-    #                 'nodata': nodata,
-    #                 'dtype': dtype,
-    #                 'driver': 'GTiff',
-    #                 'crs': self.proj4_str,
-    #                 'transform': trans
-    #                 }
-    #         meta.update(kwargs)
-    #         with rasterio.open(filename, 'w', **meta) as dst:
-    #             dst.write(a)
-    #         print('wrote {}'.format(filename))
-    #
-    #     elif filename.lower().endswith(".shp"):
-    #         from ..export.shapefile_utils import write_grid_shapefile2
-    #         epsg = kwargs.get('epsg', None)
-    #         prj = kwargs.get('prj', None)
-    #         if epsg is None and prj is None:
-    #             epsg = self.epsg
-    #         write_grid_shapefile2(filename, self, array_dict={fieldname: a},
-    #                               nan_val=nodata,
-    #                               epsg=epsg, prj=prj)
-
-    # def export_contours(self, filename, contours,
-    #                     fieldname='level', epsg=None, prj=None,
-    #                     **kwargs):
-    #     """
-    #     Convert matplotlib contour plot object to shapefile.
-    #
-    #     Parameters
-    #     ----------
-    #     filename : str
-    #         path of output shapefile
-    #     contours : matplotlib.contour.QuadContourSet or list of them
-    #         (object returned by matplotlib.pyplot.contour)
-    #     epsg : int
-    #         EPSG code. See https://www.epsg-registry.org/ or spatialreference.org
-    #     prj : str
-    #         Existing projection file to be used with new shapefile.
-    #     **kwargs : key-word arguments to flopy.export.shapefile_utils.recarray2shp
-    #
-    #     Returns
-    #     -------
-    #     df : dataframe of shapefile contents
-    #
-    #     """
-    #     from flopy.utils.geometry import LineString
-    #     from flopy.export.shapefile_utils import recarray2shp
-    #
-    #     if not isinstance(contours, list):
-    #         contours = [contours]
-    #
-    #     if epsg is None:
-    #         epsg = self._epsg
-    #     if prj is None:
-    #         prj = self.proj4_str
-    #
-    #     geoms = []
-    #     level = []
-    #     for ctr in contours:
-    #         levels = ctr.levels
-    #         for i, c in enumerate(ctr.collections):
-    #             paths = c.get_paths()
-    #             geoms += [LineString(p.vertices) for p in paths]
-    #             level += list(np.ones(len(paths)) * levels[i])
-    #
-    #     # convert the dictionary to a recarray
-    #     ra = np.array(level,
-    #                   dtype=[(fieldname, float)]).view(np.recarray)
-    #
-    #     recarray2shp(ra, geoms, filename, epsg=epsg, prj=prj, **kwargs)
-    #
-    # def export_array_contours(self, filename, a,
-    #                           fieldname='level',
-    #                           interval=None,
-    #                           levels=None,
-    #                           maxlevels=1000,
-    #                           epsg=None,
-    #                           prj=None,
-    #                           **kwargs):
-    #     """
-    #     Contour an array using matplotlib; write shapefile of contours.
-    #
-    #     Parameters
-    #     ----------
-    #     filename : str
-    #         Path of output file with '.shp' extension.
-    #     a : 2D numpy array
-    #         Array to contour
-    #     epsg : int
-    #         EPSG code. See https://www.epsg-registry.org/ or spatialreference.org
-    #     prj : str
-    #         Existing projection file to be used with new shapefile.
-    #     **kwargs : key-word arguments to flopy.export.shapefile_utils.recarray2shp
-    #
-    #     """
-    #     import matplotlib.pyplot as plt
-    #
-    #     if epsg is None:
-    #         epsg = self._epsg
-    #     if prj is None:
-    #         prj = self.proj4_str
-    #
-    #     if interval is not None:
-    #         vmin = np.nanmin(a)
-    #         vmax = np.nanmax(a)
-    #         nlevels = np.round(np.abs(vmax - vmin) / interval, 2)
-    #         msg = '{:.0f} levels '.format(nlevels) + \
-    #               'at interval of {} > '.format(interval) + \
-    #               'maxlevels = {}'.format(maxlevels)
-    #         assert nlevels < maxlevels, msg
-    #         levels = np.arange(vmin, vmax, interval)
-    #     fig, ax = plt.subplots()
-    #     ctr = self.contour_array(ax, a, levels=levels)
-    #     self.export_contours(filename, ctr, fieldname, epsg, prj, **kwargs)
-    #     plt.close()
-    #
-    # def contour_array(self, ax, a, **kwargs):
-    #     """
-    #     Create a QuadMesh plot of the specified array using pcolormesh
-    #
-    #     Parameters
-    #     ----------
-    #     ax : matplotlib.axes.Axes
-    #         ax to add the contours
-    #
-    #     a : np.ndarray
-    #         array to contour
-    #
-    #     Returns
-    #     -------
-    #     contour_set : ContourSet
-    #
-    #     """
-    #     from flopy.plot import ModelMap
-    #
-    #     kwargs['ax'] = ax
-    #     mm = ModelMap(sr=self)
-    #     contour_set = mm.contour_array(a=a, **kwargs)
-    #
-    #     return contour_set
 
     @property
     def vertices(self):
@@ -5965,611 +5871,10 @@ class SpatialReference(object):
         jj, ii = jj.ravel(), ii.ravel()
         self._vertices = self.get_vertices(ii, jj)
 
-    # def interpolate(self, a, xi, method='nearest'):
-    #     """
-    #     Use the griddata method to interpolate values from an array onto the
-    #     points defined in xi.  For any values outside of the grid, use
-    #     'nearest' to find a value for them.
-    #
-    #     Parameters
-    #     ----------
-    #     a : numpy.ndarray
-    #         array to interpolate from.  It must be of size nrow, ncol
-    #     xi : numpy.ndarray
-    #         array containing x and y point coordinates of size (npts, 2). xi
-    #         also works with broadcasting so that if a is a 2d array, then
-    #         xi can be passed in as (xgrid, ygrid).
-    #     method : {'linear', 'nearest', 'cubic'}
-    #         method to use for interpolation (default is 'nearest')
-    #
-    #     Returns
-    #     -------
-    #     b : numpy.ndarray
-    #         array of size (npts)
-    #
-    #     """
-    #     try:
-    #         from scipy.interpolate import griddata
-    #     except:
-    #         print('scipy not installed\ntry pip install scipy')
-    #         return None
-    #
-    #     # Create a 2d array of points for the grid centers
-    #     points = np.empty((self.ncol * self.nrow, 2))
-    #     points[:, 0] = self.xcentergrid.flatten()
-    #     points[:, 1] = self.ycentergrid.flatten()
-    #
-    #     # Use the griddata function to interpolate to the xi points
-    #     b = griddata(points, a.flatten(), xi, method=method, fill_value=np.nan)
-    #
-    #     # if method is linear or cubic, then replace nan's with a value
-    #     # interpolated using nearest
-    #     if method != 'nearest':
-    #         bn = griddata(points, a.flatten(), xi, method='nearest')
-    #         idx = np.isnan(b)
-    #         b[idx] = bn[idx]
-    #
-    #     return b
-
-    # def get_2d_vertex_connectivity(self):
-    #     """
-    #     Create the cell 2d vertices array and the iverts index array.  These
-    #     are the same form as the ones used to instantiate an unstructured
-    #     spatial reference.
-    #
-    #     Returns
-    #     -------
-    #
-    #     verts : ndarray
-    #         array of x and y coordinates for the grid vertices
-    #
-    #     iverts : list
-    #         a list with a list of vertex indices for each cell in clockwise
-    #         order starting with the upper left corner
-    #
-    #     """
-    #     x = self.xgrid.flatten()
-    #     y = self.ygrid.flatten()
-    #     nrowvert = self.nrow + 1
-    #     ncolvert = self.ncol + 1
-    #     npoints = nrowvert * ncolvert
-    #     verts = np.empty((npoints, 2), dtype=np.float)
-    #     verts[:, 0] = x
-    #     verts[:, 1] = y
-    #     iverts = []
-    #     for i in range(self.nrow):
-    #         for j in range(self.ncol):
-    #             iv1 = i * ncolvert + j  # upper left point number
-    #             iv2 = iv1 + 1
-    #             iv4 = (i + 1) * ncolvert + j
-    #             iv3 = iv4 + 1
-    #             iverts.append([iv1, iv2, iv3, iv4])
-    #     return verts, iverts
-
-    # def get_3d_shared_vertex_connectivity(self, nlay, botm, ibound=None):
-    #
-    #     # get the x and y points for the grid
-    #     x = self.xgrid.flatten()
-    #     y = self.ygrid.flatten()
-    #
-    #     # set the size of the vertex grid
-    #     nrowvert = self.nrow + 1
-    #     ncolvert = self.ncol + 1
-    #     nlayvert = nlay + 1
-    #     nrvncv = nrowvert * ncolvert
-    #     npoints = nrvncv * nlayvert
-    #
-    #     # create and fill a 3d points array for the grid
-    #     verts = np.empty((npoints, 3), dtype=np.float)
-    #     verts[:, 0] = np.tile(x, nlayvert)
-    #     verts[:, 1] = np.tile(y, nlayvert)
-    #     istart = 0
-    #     istop = nrvncv
-    #     for k in range(nlay + 1):
-    #         verts[istart:istop, 2] = self.interpolate(botm[k],
-    #                                                   verts[istart:istop, :2],
-    #                                                   method='linear')
-    #         istart = istop
-    #         istop = istart + nrvncv
-    #
-    #     # create the list of points comprising each cell. points must be
-    #     # listed a specific way according to vtk requirements.
-    #     iverts = []
-    #     for k in range(nlay):
-    #         koffset = k * nrvncv
-    #         for i in range(self.nrow):
-    #             for j in range(self.ncol):
-    #                 if ibound is not None:
-    #                     if ibound[k, i, j] == 0:
-    #                         continue
-    #                 iv1 = i * ncolvert + j + koffset
-    #                 iv2 = iv1 + 1
-    #                 iv4 = (i + 1) * ncolvert + j + koffset
-    #                 iv3 = iv4 + 1
-    #                 iverts.append([iv4 + nrvncv, iv3 + nrvncv,
-    #                                iv1 + nrvncv, iv2 + nrvncv,
-    #                                iv4, iv3, iv1, iv2])
-    #
-    #     # renumber and reduce the vertices if ibound_filter
-    #     if ibound is not None:
-    #
-    #         # go through the vertex list and mark vertices that are used
-    #         ivertrenum = np.zeros(npoints, dtype=np.int)
-    #         for vlist in iverts:
-    #             for iv in vlist:
-    #                 # mark vertices that are actually used
-    #                 ivertrenum[iv] = 1
-    #
-    #         # renumber vertices that are used, skip those that are not
-    #         inum = 0
-    #         for i in range(npoints):
-    #             if ivertrenum[i] > 0:
-    #                 inum += 1
-    #                 ivertrenum[i] = inum
-    #         ivertrenum -= 1
-    #
-    #         # reassign the vertex list using the new vertex numbers
-    #         iverts2 = []
-    #         for vlist in iverts:
-    #             vlist2 = []
-    #             for iv in vlist:
-    #                 vlist2.append(ivertrenum[iv])
-    #             iverts2.append(vlist2)
-    #         iverts = iverts2
-    #         idx = np.where(ivertrenum >= 0)
-    #         verts = verts[idx]
-    #
-    #     return verts, iverts
-
-    # def get_3d_vertex_connectivity(self, nlay, top, bot, ibound=None):
-    #     if ibound is None:
-    #         ncells = nlay * self.nrow * self.ncol
-    #         ibound = np.ones((nlay, self.nrow, self.ncol), dtype=np.int)
-    #     else:
-    #         ncells = (ibound != 0).sum()
-    #     npoints = ncells * 8
-    #     verts = np.empty((npoints, 3), dtype=np.float)
-    #     iverts = []
-    #     ipoint = 0
-    #     for k in range(nlay):
-    #         for i in range(self.nrow):
-    #             for j in range(self.ncol):
-    #                 if ibound[k, i, j] == 0:
-    #                     continue
-    #
-    #                 ivert = []
-    #                 pts = self.get_vertices(i, j)
-    #                 pt0, pt1, pt2, pt3, pt0 = pts
-    #
-    #                 z = bot[k, i, j]
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt1)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt2)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt0)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt3)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 z = top[k, i, j]
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt1)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt2)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt0)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 verts[ipoint, 0:2] = np.array(pt3)
-    #                 verts[ipoint, 2] = z
-    #                 ivert.append(ipoint)
-    #                 ipoint += 1
-    #
-    #                 iverts.append(ivert)
-    #
-    #     return verts, iverts
-
-
-# class EpsgRef:
-#     """
-#     Sets up a local database of text representations of coordinate reference
-#     systems, keyed by EPSG code.
-#
-#     The database is epsgref.json, located in the user's data directory. If
-#     optional 'appdirs' package is available, this is in the platform-dependent
-#     user directory, otherwise in the user's 'HOME/.flopy' directory.
-#     """
-#
-#     def __init__(self):
-#         try:
-#             from appdirs import user_data_dir
-#         except ImportError:
-#             user_data_dir = None
-#         if user_data_dir:
-#             datadir = user_data_dir('flopy')
-#         else:
-#             # if appdirs is not installed, use user's home directory
-#             datadir = os.path.join(os.path.expanduser('~'), '.flopy')
-#         if not os.path.isdir(datadir):
-#             os.makedirs(datadir)
-#         dbname = 'epsgref.json'
-#         self.location = os.path.join(datadir, dbname)
-#
-#     def to_dict(self):
-#         """
-#         Returns dict with EPSG code integer key, and WKT CRS text
-#         """
-#         data = OrderedDict()
-#         if os.path.exists(self.location):
-#             with open(self.location, 'r') as f:
-#                 loaded_data = json.load(f, object_pairs_hook=OrderedDict)
-#             # convert JSON key from str to EPSG integer
-#             for key, value in loaded_data.items():
-#                 try:
-#                     data[int(key)] = value
-#                 except ValueError:
-#                     data[key] = value
-#         return data
-#
-#     def _write(self, data):
-#         with open(self.location, 'w') as f:
-#             json.dump(data, f, indent=0)
-#             f.write('\n')
-#
-#     def reset(self, verbose=True):
-#         if os.path.exists(self.location):
-#             os.remove(self.location)
-#         if verbose:
-#             print('Resetting {}'.format(self.location))
-#
-#     def add(self, epsg, prj):
-#         """
-#         add an epsg code to epsgref.json
-#         """
-#         data = self.to_dict()
-#         data[epsg] = prj
-#         self._write(data)
-#
-#     def get(self, epsg):
-#         """
-#         returns prj from a epsg code, otherwise None if not found
-#         """
-#         data = self.to_dict()
-#         return data.get(epsg)
-#
-#     def remove(self, epsg):
-#         """
-#         removes an epsg entry from epsgref.json
-#         """
-#         data = self.to_dict()
-#         if epsg in data:
-#             del data[epsg]
-#             self._write(data)
-#
-#     @staticmethod
-#     def show():
-#         ep = EpsgRef()
-#         prj = ep.to_dict()
-#         for k, v in prj.items():
-#             print('{}:\n{}\n'.format(k, v))
-
-
-# class CRS(object):
-#     """
-#     Container to parse and store coordinate reference system parameters,
-#     and translate between different formats.
-#     """
-#
-#     def __init__(self, prj=None, esri_wkt=None, epsg=None):
-#         warnings.warn(
-#             "crs has been deprecated. Use CRS in shapefile_utils instead.",
-#             category=DeprecationWarning)
-#         self.wktstr = None
-#         if prj is not None:
-#             with open(prj) as fprj:
-#                 self.wktstr = fprj.read()
-#         elif esri_wkt is not None:
-#             self.wktstr = esri_wkt
-#         elif epsg is not None:
-#             wktstr = getprj(epsg)
-#             if wktstr is not None:
-#                 self.wktstr = wktstr
-#         if self.wktstr is not None:
-#             self.parse_wkt()
-#
-#     @property
-#     def crs(self):
-#         """
-#         Dict mapping crs attributes to proj4 parameters
-#         """
-#         proj = None
-#         if self.projcs is not None:
-#             # projection
-#             if 'mercator' in self.projcs.lower():
-#                 if 'transverse' in self.projcs.lower() or \
-#                         'tm' in self.projcs.lower():
-#                     proj = 'tmerc'
-#                 else:
-#                     proj = 'merc'
-#             elif 'utm' in self.projcs.lower() and \
-#                     'zone' in self.projcs.lower():
-#                 proj = 'utm'
-#             elif 'stateplane' in self.projcs.lower():
-#                 proj = 'lcc'
-#             elif 'lambert' and 'conformal' and 'conic' in self.projcs.lower():
-#                 proj = 'lcc'
-#             elif 'albers' in self.projcs.lower():
-#                 proj = 'aea'
-#         elif self.projcs is None and self.geogcs is not None:
-#             proj = 'longlat'
-#
-#         # datum
-#         datum = None
-#         if 'NAD' in self.datum.lower() or \
-#                 'north' in self.datum.lower() and \
-#                 'america' in self.datum.lower():
-#             datum = 'nad'
-#             if '83' in self.datum.lower():
-#                 datum += '83'
-#             elif '27' in self.datum.lower():
-#                 datum += '27'
-#         elif '84' in self.datum.lower():
-#             datum = 'wgs84'
-#
-#         # ellipse
-#         ellps = None
-#         if '1866' in self.spheroid_name:
-#             ellps = 'clrk66'
-#         elif 'grs' in self.spheroid_name.lower():
-#             ellps = 'grs80'
-#         elif 'wgs' in self.spheroid_name.lower():
-#             ellps = 'wgs84'
-#
-#         # prime meridian
-#         pm = self.primem[0].lower()
-#
-#         return {'proj': proj,
-#                 'datum': datum,
-#                 'ellps': ellps,
-#                 'a': self.semi_major_axis,
-#                 'rf': self.inverse_flattening,
-#                 'lat_0': self.latitude_of_origin,
-#                 'lat_1': self.standard_parallel_1,
-#                 'lat_2': self.standard_parallel_2,
-#                 'lon_0': self.central_meridian,
-#                 'k_0': self.scale_factor,
-#                 'x_0': self.false_easting,
-#                 'y_0': self.false_northing,
-#                 'units': self.projcs_unit,
-#                 'zone': self.utm_zone}
-#
-#     @property
-#     def grid_mapping_attribs(self):
-#         """
-#         Map parameters for CF Grid Mappings
-#         http://http://cfconventions.org/cf-conventions/cf-conventions.html,
-#         Appendix F: Grid Mappings
-#         """
-#         if self.wktstr is not None:
-#             sp = [p for p in [self.standard_parallel_1,
-#                               self.standard_parallel_2]
-#                   if p is not None]
-#             sp = sp if len(sp) > 0 else None
-#             proj = self.crs['proj']
-#             names = {'aea': 'albers_conical_equal_area',
-#                      'aeqd': 'azimuthal_equidistant',
-#                      'laea': 'lambert_azimuthal_equal_area',
-#                      'longlat': 'latitude_longitude',
-#                      'lcc': 'lambert_conformal_conic',
-#                      'merc': 'mercator',
-#                      'tmerc': 'transverse_mercator',
-#                      'utm': 'transverse_mercator'}
-#             attribs = {'grid_mapping_name': names[proj],
-#                        'semi_major_axis': self.crs['a'],
-#                        'inverse_flattening': self.crs['rf'],
-#                        'standard_parallel': sp,
-#                        'longitude_of_central_meridian': self.crs['lon_0'],
-#                        'latitude_of_projection_origin': self.crs['lat_0'],
-#                        'scale_factor_at_projection_origin': self.crs['k_0'],
-#                        'false_easting': self.crs['x_0'],
-#                        'false_northing': self.crs['y_0']}
-#             return {k: v for k, v in attribs.items() if v is not None}
-#
-#     @property
-#     def proj4(self):
-#         """
-#         Not implemented yet
-#         """
-#         return None
-#
-#     def parse_wkt(self):
-#
-#         self.projcs = self._gettxt('PROJCS["', '"')
-#         self.utm_zone = None
-#         if self.projcs is not None and 'utm' in self.projcs.lower():
-#             self.utm_zone = self.projcs[-3:].lower().strip('n').strip('s')
-#         self.geogcs = self._gettxt('GEOGCS["', '"')
-#         self.datum = self._gettxt('DATUM["', '"')
-#         tmp = self._getgcsparam('SPHEROID')
-#         self.spheroid_name = tmp.pop(0)
-#         self.semi_major_axis = tmp.pop(0)
-#         self.inverse_flattening = tmp.pop(0)
-#         self.primem = self._getgcsparam('PRIMEM')
-#         self.gcs_unit = self._getgcsparam('UNIT')
-#         self.projection = self._gettxt('PROJECTION["', '"')
-#         self.latitude_of_origin = self._getvalue('latitude_of_origin')
-#         self.central_meridian = self._getvalue('central_meridian')
-#         self.standard_parallel_1 = self._getvalue('standard_parallel_1')
-#         self.standard_parallel_2 = self._getvalue('standard_parallel_2')
-#         self.scale_factor = self._getvalue('scale_factor')
-#         self.false_easting = self._getvalue('false_easting')
-#         self.false_northing = self._getvalue('false_northing')
-#         self.projcs_unit = self._getprojcs_unit()
-#
-#     def _gettxt(self, s1, s2):
-#         s = self.wktstr.lower()
-#         strt = s.find(s1.lower())
-#         if strt >= 0:  # -1 indicates not found
-#             strt += len(s1)
-#             end = s[strt:].find(s2.lower()) + strt
-#             return self.wktstr[strt:end]
-#
-#     def _getvalue(self, k):
-#         s = self.wktstr.lower()
-#         strt = s.find(k.lower())
-#         if strt >= 0:
-#             strt += len(k)
-#             end = s[strt:].find(']') + strt
-#             try:
-#                 return float(self.wktstr[strt:end].split(',')[1])
-#             except:
-#                 print('   could not typecast wktstr to a float')
-#
-#     def _getgcsparam(self, txt):
-#         nvalues = 3 if txt.lower() == 'spheroid' else 2
-#         tmp = self._gettxt('{}["'.format(txt), ']')
-#         if tmp is not None:
-#             tmp = tmp.replace('"', '').split(',')
-#             name = tmp[0:1]
-#             values = list(map(float, tmp[1:nvalues]))
-#             return name + values
-#         else:
-#             return [None] * nvalues
-#
-#     def _getprojcs_unit(self):
-#         if self.projcs is not None:
-#             tmp = self.wktstr.lower().split('unit["')[-1]
-#             uname, ufactor = tmp.strip().strip(']').split('",')[0:2]
-#             ufactor = float(ufactor.split(']')[0].split()[0].split(',')[0])
-#             return uname, ufactor
-#         return None, None
-
-
-# def getprj(epsg, addlocalreference=True, text='esriwkt'):
-#     """
-#     Gets projection file (.prj) text for given epsg code from
-#     spatialreference.org
-#
-#     Parameters
-#     ----------
-#     epsg : int
-#         epsg code for coordinate system
-#     addlocalreference : boolean
-#         adds the projection file text associated with epsg to a local
-#         database, epsgref.json, located in the user's data directory.
-#
-#     References
-#     ----------
-#     https://www.epsg-registry.org/
-#
-#     Returns
-#     -------
-#     prj : str
-#         text for a projection (*.prj) file.
-#
-#     """
-#     warnings.warn("SpatialReference has been deprecated. Use StructuredGrid "
-#                   "instead.", category=DeprecationWarning)
-#     epsgfile = EpsgRef()
-#     wktstr = epsgfile.get(epsg)
-#     if wktstr is None:
-#         wktstr = get_spatialreference(epsg, text=text)
-#     if addlocalreference and wktstr is not None:
-#         epsgfile.add(epsg, wktstr)
-#     return wktstr
-
-#
-# def get_spatialreference(epsg, text='esriwkt'):
-#     """
-#     Gets text for given epsg code and text format from spatialreference.org
-#
-#     Fetches the reference text using the url:
-#         https://spatialreference.org/ref/epsg/<epsg code>/<text>/
-#
-#     See: https://www.epsg-registry.org/
-#
-#     Parameters
-#     ----------
-#     epsg : int
-#         epsg code for coordinate system
-#     text : str
-#         string added to url
-#
-#     Returns
-#     -------
-#     url : str
-#
-#     """
-#     from flopy.utils.flopy_io import get_url_text
-#
-#     warnings.warn("SpatialReference has been deprecated. Use StructuredGrid "
-#                   "instead.", category=DeprecationWarning)
-#
-#     epsg_categories = ['epsg', 'esri']
-#     for cat in epsg_categories:
-#         url = "{}/ref/{}/{}/{}/".format(srefhttp, cat, epsg, text)
-#         result = get_url_text(url)
-#         if result is not None:
-#             break
-#     if result is not None:
-#         return result.replace("\n", "")
-#     elif result is None and text != 'epsg':
-#         for cat in epsg_categories:
-#             error_msg = 'No internet connection or ' + \
-#                         'epsg code {} '.format(epsg) +  \
-#                         'not found at {}/ref/'.format(srefhttp) + \
-#                         '{}/{}/{}'.format(cat, cat, epsg)
-#             print(error_msg)
-#     # epsg code not listed on spatialreference.org
-#     # may still work with pyproj
-#     elif text == 'epsg':
-#         return '+init=epsg:{}'.format(epsg)
-#
-#
-# def getproj4(epsg):
-#     """
-#     Get projection file (.prj) text for given epsg code from
-#     spatialreference.org. See: https://www.epsg-registry.org/
-#
-#     Parameters
-#     ----------
-#     epsg : int
-#         epsg code for coordinate system
-#
-#     Returns
-#     -------
-#     prj : str
-#         text for a projection (*.prj) file.
-#
-#     """
-#     warnings.warn("SpatialReference has been deprecated. Use StructuredGrid "
-#                   "instead.", category=DeprecationWarning)
-#
-#     return get_spatialreference(epsg, text='proj4')
-
 
 def get_maha_obs_summary(sim_en, l1_crit_val=6.34, l2_crit_val=9.2):
-    """calculate the 1-D and 2-D mahalanobis distance
+    """calculate the 1-D and 2-D mahalanobis distance between simulated
+    ensemble and observed values.  Used for detecting prior-data conflict
 
     Args:
         sim_en (`pyemu.ObservationEnsemble`): a simulated outputs ensemble

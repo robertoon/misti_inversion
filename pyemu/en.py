@@ -8,6 +8,7 @@ import pyemu
 from .pyemu_warnings import PyemuWarning
 
 SEED = 358183147  # from random.org on 5 Dec 2016
+np.random.seed(SEED)
 
 
 class Loc(object):
@@ -131,6 +132,9 @@ class Ensemble(object):
         Note:
             reseeds using the pyemu.en.SEED global variable
 
+            The pyemu.en.SEED value is set as the numpy.random.seed on import, so
+            make sure you know what you are doing if you call this method...
+
         """
         np.random.seed(SEED)
 
@@ -141,7 +145,7 @@ class Ensemble(object):
             `Ensemble`: copy of this `Ensemble`
 
         Note:
-            copies both `Ensemble.pst` and `Ensemble._df`
+            copies both `Ensemble.pst` and `Ensemble._df`: can be expensive
 
         """
         return type(self)(
@@ -173,7 +177,7 @@ class Ensemble(object):
             Parameter transform is only related to log_{10} and does not
             include the effects of `scale` and/or `offset`
 
-            `Ensemble.transform() is only provided for inhertance purposes.
+            `Ensemble.transform() is only provided for inheritance purposes.
             It only changes the `Ensemble._transformed` flag
 
         """
@@ -191,7 +195,7 @@ class Ensemble(object):
             Parameter transform is only related to log_{10} and does not
             include the effects of `scale` and/or `offset`
 
-            `Ensemble.back_transform() is only provided for inhertance purposes.
+            `Ensemble.back_transform() is only provided for inheritance purposes.
             It only changes the `Ensemble._transformed` flag
 
         """
@@ -279,7 +283,7 @@ class Ensemble(object):
             filename (`str`): filename containing binary ensemble
 
         Returns:
-            `Ensemble`: the ensembled loaded from the binary file
+            `Ensemble`: the ensemble loaded from the binary file
 
         Example::
 
@@ -288,6 +292,7 @@ class Ensemble(object):
 
 
         """
+
         df = pyemu.Matrix.from_binary(filename).to_dataframe()
         return cls(pst=pst, df=df)
 
@@ -338,7 +343,7 @@ class Ensemble(object):
 
         Note:
             back transforms `ParameterEnsemble` before writing so that
-            values are in arithmatic space
+            values are in arithmetic space
 
         """
         retrans = False
@@ -361,7 +366,35 @@ class Ensemble(object):
 
             pst = pyemu.Pst("my.pst")
             oe = pyemu.ObservationEnsemble.from_gaussian_draw(pst)
-            oe.to_binary("obs.csv")
+            oe.to_binary("obs.jcb")
+
+        Note:
+            back transforms `ParameterEnsemble` before writing so that
+            values are in arithmetic space
+
+        """
+
+        retrans = False
+        if self.istransformed:
+            self.back_transform()
+            retrans = True
+        if self._df.isnull().values.any():
+            warnings.warn("NaN in ensemble", PyemuWarning)
+        pyemu.Matrix.from_dataframe(self._df).to_coo(filename)
+        if retrans:
+            self.transform()
+
+    def to_dense(self, filename):
+        """write `Ensemble` to a dense-format binary file
+
+        Args:
+            filename (`str`): file to write
+
+        Example::
+
+            pst = pyemu.Pst("my.pst")
+            oe = pyemu.ObservationEnsemble.from_gaussian_draw(pst)
+            oe.to_dense("obs.bin")
 
         Note:
             back transforms `ParameterEnsemble` before writing so that
@@ -375,7 +408,12 @@ class Ensemble(object):
             retrans = True
         if self._df.isnull().values.any():
             warnings.warn("NaN in ensemble", PyemuWarning)
-        pyemu.Matrix.from_dataframe(self._df).to_coo(filename)
+        pyemu.Matrix.write_dense(
+            filename,
+            self._df.index.tolist(),
+            self._df.columns.tolist(),
+            self._df.values,
+        )
         if retrans:
             self.transform()
 
@@ -548,9 +586,17 @@ class Ensemble(object):
             realized values for each column
 
             `center_on=None` yields the classic ensemble smoother/ensemble Kalman
-            filter deviations
+            filter deviations from the mean vector
 
             Deviations respect log-transformation status.
+
+        Example::
+
+            pst = pyemu.Pst("my.pst")
+            oe = pyemu.ObservationEnsemble.from_gaussian_draw(pst)
+            oe.add_base()
+            oe_dev = oe.get_deviations(center_on="base")
+            oe.to_csv("obs_base_devs.csv")
 
         """
 
@@ -585,11 +631,9 @@ class Ensemble(object):
 
         Example::
 
-            pst = pyemu.Pst("my.pst")
-            oe = pyemu.ObservationEnsemble.from_gaussian_draw(pst)
-            oe.add_base()
-            oe_dev = oe.get_deviations(center_on="base")
-            oe.to_csv("obs_base_devs.csv")
+            oe = pyemu.ObservationEnsemble.from_gaussian_draw(pst=pst,num_reals=100)
+            dev_mat = oe.get_deviations().as_pyemu_matrix(typ=pyemu.Cov)
+            obscov = dev_mat.T * dev_mat
 
         """
         if typ is None:
@@ -769,7 +813,9 @@ class ObservationEnsemble(Ensemble):
 
         Note:
             replaces the last realization with the current `ObservationEnsemble.pst.observation_data.obsval` values
-                as a new realization named "base"
+            as a new realization named "base"
+
+            the PEST++ enemble tools will add this realization also if you dont wanna fool with it here...
 
         """
         if "base" in self.index:
@@ -865,11 +911,11 @@ class ParameterEnsemble(Ensemble):
 
             pst = pyemu.Pst("my.pst")
             # the easiest way - just relying on weights in pst
-            oe1 = pyemu.ParameterEnsemble.from_gaussian_draw(pst)
+            pe1 = pyemu.ParameterEnsemble.from_gaussian_draw(pst)
 
             # generate the cov explicitly with a sigma_range
             cov = pyemu.Cov.from_parameter_data(pst,sigma_range=6)
-            oe2 = pyemu.ParameterEnsemble.from_gaussian_draw(pst,cov=cov)
+            [e2 = pyemu.ParameterEnsemble.from_gaussian_draw(pst,cov=cov)
 
         """
         if cov is None:
@@ -1058,6 +1104,14 @@ class ParameterEnsemble(Ensemble):
                 Default is `False`.
             fill (`bool`): flag to fill in fixed and/or tied parameters with control file
                 values.  Default is True.
+
+        Example::
+
+            pst = pyemu.Pst("pest.pst")
+            # uniform for the fist 10 pars
+            how_dict = {p:"uniform" for p in pst.adj_par_names[:10]}
+            pe = pyemu.ParameterEnsemble(pst,how_dict=how_dict)
+            pe.to_csv("my_mixed_pe.csv")
 
         """
 
@@ -1288,6 +1342,8 @@ class ParameterEnsemble(Ensemble):
             replaces the last realization with the current `ParameterEnsemble.pst.parameter_data.parval1` values
             as a new realization named "base"
 
+            The PEST++ ensemble tools will add this realization also if you dont wanna fool with it here...
+
         """
         if "base" in self.index:
             raise Exception("'base' realization already in ensemble")
@@ -1444,18 +1500,21 @@ class ParameterEnsemble(Ensemble):
         return new_en
 
     def enforce(self, how="reset", bound_tol=0.0):
-        """entry point for bounds enforcement.  This gets called for the
-        draw method(s), so users shouldn't need to call this
+        """entry point for bounds enforcement.
 
         Args:
             enforce_bounds (`str`): can be 'reset' to reset offending values or 'drop' to drop
-                offending realizations
+                offending realizations.  Default is "reset"
+
+        Note:
+            In very high dimensions, the "drop" and "scale" `how` types will result in either very few realizations
+            or very short realizations.
 
         Example::
 
             pst = pyemu.Pst("my.pst")
             pe = pyemu.ParameterEnsemble.from_gaussian_draw()
-            pe.enforce(how="scale)
+            pe.enforce(how="scale")
             pe.to_csv("par.csv")
 
 
